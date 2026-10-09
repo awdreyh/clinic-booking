@@ -1,0 +1,72 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Tea Journal",
+
+  "navTea": "Tea",
+  "navTeaware": "Teaware",
+  "navLog": "Log",
+  "navProfile": "Profile",
+
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "next": "Next",
+  "finish": "Finish",
+  "confirm": "Confirm",
+
+  "language": "Language",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English",
+  "chooseLanguageTitle": "Choose your language",
+  "chooseLanguagePrompt": "Please choose your preferred language / 请选择您的语言",
+
+  "signOut": "Sign Out",
+  "welcomeUser": "Welcome!",
+  "myBookings": "My bookings",
+  "nextBooking": "Next booking",
+  "noUpcomingBookings": "No upcoming bookings",
+  "addBooking": "Add booking",
+  "otherUpcomingBookings": "Other upcoming bookings",
+  "bookingLoadError": "Could not load your bookings.",
+  "retry": "Retry",
+  "bookingType": "Booking type",
+  "singleBooking": "Single",
+  "weeklyBooking": "Weekly",
+  "fortnightlyBooking": "Fortnightly",
+  "monthlyBooking": "Monthly",
+  "selectTherapist": "Therapist",
+  "selectRoom": "Room",
+  "selectDate": "Date",
+  "chooseTherapistAndRoom": "Select a therapist and room to view availability.",
+  "availabilityLoadError": "Could not load availability.",
+  "noAvailableDates": "No available dates in the next 90 days.",
+  "selectTime": "Time",
+  "selectDateFirst": "Select a date to see available times.",
+  "noTimeslotsForDate": "No available timeslots for this date.",
+  "bookingCreated": "Booking created.",
+  "bookingOptionsLoadError": "Could not load booking options.",
+  "spacesRemaining": "{count, plural, one{# space remaining} other{# spaces remaining}}",
+  "@spacesRemaining": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recurringAvailabilityNote": "Recurring bookings use matching available slots for the next {days} days.",
+  "@recurringAvailabilityNote": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "bookingSessions": "{count, plural, =0{Select a timeslot} one{Book # session} other{Book # sessions}}",
+  "@bookingSessions": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "confirmDeleteTitle": "Confirm Delete",
+  "confirmDeleteMessage": "Are you sure you want to delete this? This action cannot be undone."
+}
