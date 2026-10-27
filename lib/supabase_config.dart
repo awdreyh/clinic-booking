@@ -1,35 +1,45 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
 
-Future<void> initSupabase() async {
-  await SupabaseService.init();
-}
+Future<void> initSupabase() => SupabaseService.init();
+
 class SupabaseService {
-  // Centralized client reference
   static SupabaseClient get client => Supabase.instance.client;
 
-  // Run with --dart-define=USE_LOCAL_SUPABASE=true to target `supabase start`.
-  // static const _useLocal = bool.fromEnvironment('USE_LOCAL_SUPABASE');
+  static String _required(String key) {
+    final value = dotenv.env[key]?.trim();
+    if (value == null || value.isEmpty) {
+      throw StateError('Missing $key in .env.app');
+    }
+    return value;
+  }
 
-  // 10.0.2.2 is the Android emulator's alias for the host machine's 127.0.0.1.
-  static String get _localUrl =>
-      !kIsWeb && Platform.isAndroid
-        ? 'http://10.0.2.2:54331'
-        : 'http://127.0.0.1:54331';
-  static const _localPublishableKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+  static bool get _useCloud =>
+      (dotenv.env['SUPABASE_ENV'] ?? 'local').toLowerCase() == 'cloud';
 
-  // static const _cloudUrl = 'https://rgmodxpfbtqszajsmxti.supabase.co';
-  // static const _cloudPublishableKey =
-  //     'sb_publishable_2CsRxp7-QLhg4ZESZIUFVg_fqKORvo9';
+  static String get _url {
+    if (_useCloud) return _required('CLOUD_BASE_URL');
+    if (!kIsWeb && Platform.isAndroid) {
+      return _required('LOCAL_ANDROID_EMULATOR_BASE_URL');
+    }
+    if (!kIsWeb && Platform.isIOS) {
+      return _required('LOCAL_IOS_SIMULATOR_BASE_URL');
+    }
+    return _required('LOCAL_DESKTOP_BASE_URL');
+  }
+
+  static String get _publishableKey =>
+      _required(_useCloud ? 'CLOUD_API_KEY' : 'LOCAL_API_KEY');
 
   static Future<void> init() async {
     await Supabase.initialize(
-      url: _localUrl,
-      publishableKey: _localPublishableKey,
+      url: _url,
+      publishableKey: _publishableKey,
     );
   }
 }

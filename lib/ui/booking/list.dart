@@ -15,28 +15,27 @@ class _BookingRealtimeScreenState extends State<BookingRealtimeScreen> {
   @override
   void initState() {
     super.initState();
-
     subscribeBookingRealtime().listen((booking) {
-      setState(() {
-        bookings.add(booking);
-      });
+      setState(() => bookings.add(booking));
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('实时预约')),
-      body: ListView.builder(
-        itemCount: bookings.length,
-        itemBuilder: (_, i) {
-          final b = bookings[i];
-          return ListTile(
-            title: Text('预约ID: ${b.id}'),
-            subtitle: Text('用户: ${b.userId}  诊室: ${b.roomId}'),
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('实时预约')),
+        body: ListView.builder(
+          itemCount: bookings.length,
+          itemBuilder: (_, index) {
+            final booking = bookings[index];
+            return ListTile(
+              title: Text('预约ID: ${booking.id}'),
+              subtitle: Text(
+                '客户: ${booking.customerId ?? '-'}  '
+                '时段: ${booking.bookingDate ?? '-'} '
+                '${booking.startTime ?? '-'}–${booking.endTime ?? '-'}',
+              ),
+            );
+          },
+        ),
+      );
 }

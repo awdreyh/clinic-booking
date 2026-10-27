@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_config.dart';
-import 'ui/user/login.dart';
 import 'ui/core/nav_bottom.dart';
 import 'ui/core/locale_provider.dart';
 import 'ui/core/language_prompt.dart';
+import 'ui/dashboard/guest_dashboard.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env.app');
   // Initialize Supabase with your URL and anon Key
   await SupabaseService.init();
 
@@ -74,7 +76,7 @@ class AuthGate extends StatelessWidget {
         }
 
         final session = snapshot.data?.session ?? supabase.auth.currentSession;
-        return session != null ? const HomeShell() : const AuthScreen();
+        return session != null ? const HomeShell() : const GuestDashboard();
       },
     );
   }

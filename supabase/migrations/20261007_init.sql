@@ -1,11 +1,21 @@
-create type public.user_role as enum ('user', 'doctor', 'admin');
+create type public.user_role as enum ('customer', 'therapist', 'admin');
 
 create table public.user (
  id uuid primary key references auth.users(id) on delete cascade,
   name text not null,
   email text,
   phone text unique,
-  role public.user_role not null default 'user',
+  description text,
+  is_active boolean default true,
+  is_member boolean default false,
+  last_login timestamp with time zone,
+  updated_at timestamp with time zone,
+  member_since timestamp with time zone,
+  membership_expires timestamp with time zone,
+  profile_picture text,
+  meta jsonb,
+  address text,
+  role public.user_role not null default 'customer',
   created_at timestamp with time zone default now()
 );
 
@@ -23,7 +33,7 @@ begin
     coalesce(nullif(new.raw_user_meta_data->>'name', ''), nullif(split_part(coalesce(new.email, ''), '@', 1), ''), new.id::text),
     new.email,
     nullif(new.raw_user_meta_data->>'phone', ''),
-    'user'::public.user_role
+    'customer'::public.user_role
   )
   on conflict (id) do nothing;
   return new;
@@ -37,37 +47,67 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 
+create table public.rules (
+  id bigint generated always as identity primary key,
+  day_of_week smallint not null unique check (day_of_week between 0 and 6),
+  start_time time not null default '09:00',
+  end_time time not null default '21:00',
+  slot_duration integer not null default 30 check (slot_duration > 0),
+  created_at timestamp with time zone default now(),
+  check (start_time < end_time)
+);
 
-create table public.room (
+insert into public.rules (day_of_week, start_time, end_time, slot_duration)
+select day_of_week, '09:00', '21:00', 30 from generate_series(0, 6) as day_of_week;
+
+
+create table public.category (
   id bigint generated always as identity primary key,
   name text not null,
-  department text,
-  status text check (status in ('active', 'paused')) default 'active',
+  description text,
+  parent_id bigint references public.category(id) on delete cascade,
   created_at timestamp with time zone default now()
 );
-create table public.timeslot (
+
+create table public.service (
   id bigint generated always as identity primary key,
-  room_id bigint references public.room(id) on delete cascade,
-  date date not null,
-  start_time time not null,
-  end_time time not null,
-  capacity int default 1,
-  used_count int default 0,
+  name text not null,
+  description text,
+  category_id bigint references public.category(id) on delete cascade,  
   created_at timestamp with time zone default now()
 );
+
+
+create table public.service_attribute (
+  id bigint generated always as identity primary key,
+  service_id bigint references public.service(id) on delete cascade,
+  attribute_key text not null,
+  attribute_value text not null,
+  created_at timestamp with time zone default now()
+);
+
+create table public.service_therapist (
+  id bigint generated always as identity primary key,
+  therapist_id uuid references public.user(id) on delete cascade,
+  service_id bigint references public.service(id) on delete cascade,
+  created_at timestamp with time zone default now()
+);
+
 create table public.booking (
   id bigint generated always as identity primary key,
-  user_id uuid references public.user(id) on delete cascade,
-  room_id bigint references public.room(id) on delete cascade,
-  timeslot_id bigint references public.timeslot(id) on delete cascade,
-  status text check (status in ('booked', 'cancelled')) default 'booked',
+  customer_id uuid references public.user(id) on delete cascade,
+  booking_date date not null,
+  start_time time not null,
+  end_time time not null,
+  status text check (status in ('booked','pending', 'cancelled')) default 'pending',
+  therapist_id uuid references public.user(id) on delete cascade,
+  service_id bigint,
+  duration interval,
+  price numeric(10,2),
+  notes text,
   created_at timestamp with time zone default now()
 );
-create table public.doctor_schedule (
-  id bigint generated always as identity primary key,
-  doctor_id uuid references public.user(id) on delete cascade,
-  room_id bigint references public.room(id) on delete cascade,
-  date date not null,
-  timeslot_id bigint references public.timeslot(id) on delete cascade,
-  created_at timestamp with time zone default now()
-);
+
+create unique index booking_active_therapist_slot_unique
+  on public.booking (therapist_id, booking_date, start_time)
+  where status in ('booked', 'pending');

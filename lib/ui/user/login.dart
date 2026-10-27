@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({super.key});
+  const AuthScreen({super.key, this.initialSignUp = false});
+
+  final bool initialSignUp;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -11,10 +13,16 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isSignUp = false;
+  late bool _isSignUp;
   bool _isLoading = false;
 
   final SupabaseClient supabase = Supabase.instance.client;
+
+  @override
+  void initState() {
+    super.initState();
+    _isSignUp = widget.initialSignUp;
+  }
 
   Future<void> _submit() async {
     final email = _emailController.text.trim();

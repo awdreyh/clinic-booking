@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../booking/add.dart';
+import '../therapist/list.dart';
 
-class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+class CustomerDashboard extends StatefulWidget {
+  const CustomerDashboard({super.key});
 
   @override
-  State<Dashboard> createState() => _DashboardState();
+  State<CustomerDashboard> createState() => _CustomerDashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
+class _CustomerDashboardState extends State<CustomerDashboard> {
   late Future<List<_UpcomingBooking>> _bookingsFuture;
 
   @override
@@ -26,22 +26,50 @@ class _DashboardState extends State<Dashboard> {
 
     final rows = await Supabase.instance.client
         .from('booking')
-        .select('room(name, department), timeslot(date, start_time, end_time)')
-        .eq('user_id', user.id)
-        .eq('status', 'booked');
+        .select('therapist_id, service_id, booking_date, start_time, end_time')
+        .eq('customer_id', user.id)
+        .inFilter('status', ['booked', 'pending']);
+
+    final therapistIds = rows
+        .map((row) => row['therapist_id'])
+        .whereType<String>()
+        .toSet()
+        .toList();
+    final serviceIds = rows
+        .map((row) => row['service_id'])
+        .whereType<num>()
+        .map((id) => id.toInt())
+        .toSet()
+        .toList();
+    final therapistNames = <String, String>{};
+    final serviceNames = <int, String>{};
+    if (therapistIds.isNotEmpty) {
+      final therapists = await Supabase.instance.client
+          .from('user')
+          .select('id, name')
+          .inFilter('id', therapistIds);
+      for (final therapist in therapists) {
+        therapistNames[therapist['id'] as String] =
+            therapist['name']?.toString() ?? '';
+      }
+    }
+    if (serviceIds.isNotEmpty) {
+      final services = await Supabase.instance.client
+          .from('service')
+          .select('id, name')
+          .inFilter('id', serviceIds);
+      for (final service in services) {
+        serviceNames[(service['id'] as num).toInt()] =
+            service['name']?.toString() ?? '';
+      }
+    }
 
     final now = DateTime.now();
     final bookings = <_UpcomingBooking>[];
     for (final row in rows) {
-      final roomData = row['room'];
-      final timeslotData = row['timeslot'];
-      if (roomData is! Map || timeslotData is! Map) continue;
-
-      final room = Map<String, dynamic>.from(roomData);
-      final timeslot = Map<String, dynamic>.from(timeslotData);
-      final date = timeslot['date']?.toString();
-      final startTime = timeslot['start_time']?.toString();
-      final endTime = timeslot['end_time']?.toString();
+      final date = row['booking_date']?.toString();
+      final startTime = row['start_time']?.toString();
+      final endTime = row['end_time']?.toString();
       if (date == null || startTime == null || endTime == null) continue;
 
       final startAt = DateTime.parse('${date}T$startTime');
@@ -49,8 +77,9 @@ class _DashboardState extends State<Dashboard> {
 
       bookings.add(
         _UpcomingBooking(
-          roomName: room['name']?.toString() ?? '',
-          department: room['department']?.toString(),
+          therapistName:
+              therapistNames[row['therapist_id']?.toString()] ?? 'Therapist',
+          serviceName: serviceNames[(row['service_id'] as num?)?.toInt()],
           startAt: startAt,
           endAt: DateTime.parse('${date}T$endTime'),
         ),
@@ -75,7 +104,7 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _openBooking() async {
     await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const AddBookingScreen()),
+      MaterialPageRoute(builder: (_) => const TherapistListPage()),
     );
     if (mounted) await _refreshBookings();
   }
@@ -201,14 +230,14 @@ String _formatTimeRange(
 
 class _UpcomingBooking {
   const _UpcomingBooking({
-    required this.roomName,
-    required this.department,
+    required this.therapistName,
+    this.serviceName,
     required this.startAt,
     required this.endAt,
   });
 
-  final String roomName;
-  final String? department;
+  final String therapistName;
+  final String? serviceName;
   final DateTime startAt;
   final DateTime endAt;
 }
@@ -243,14 +272,14 @@ class _NextBookingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    booking.roomName,
+                    booking.therapistName,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: colors.onPrimaryContainer,
                           fontWeight: FontWeight.w700,
                         ),
                   ),
-                  if (booking.department case final department?)
-                    Text(department),
+                  if (booking.serviceName case final serviceName?)
+                    Text(serviceName),
                   const SizedBox(height: 12),
                   Text('$dateLabel · $timeLabel'),
                 ],
@@ -279,7 +308,7 @@ class _BookingListTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.calendar_month_outlined),
-      title: Text(booking.roomName),
+      title: Text(booking.therapistName),
       subtitle: Text('$dateLabel · $timeLabel'),
       trailing: const Icon(Icons.chevron_right),
     );

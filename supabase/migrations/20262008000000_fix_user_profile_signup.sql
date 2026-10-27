@@ -2,7 +2,7 @@
 -- provides a default display name and assigns new accounts the user role.
 alter table public."user"
   alter column phone drop not null,
-  alter column role set default 'user';
+  alter column role set default 'customer';
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -17,7 +17,7 @@ begin
     coalesce(nullif(new.raw_user_meta_data->>'name', ''), nullif(split_part(coalesce(new.email, ''), '@', 1), ''), new.id::text),
     new.email,
     nullif(new.raw_user_meta_data->>'phone', ''),
-    'user'::public.user_role
+    'customer'::public.user_role
   )
   on conflict (id) do nothing;
   return new;

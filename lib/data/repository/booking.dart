@@ -1,76 +1,63 @@
-import 'package:uuid/uuid.dart';
-
 import '../../supabase_config.dart';
 import '../model/booking.dart';
 
 class BookingRepository {
-  Future<Booking> createBooking({
-    required String userId,
-    required int roomId,
-    required int timeslotId,
+  Future<List<Booking>> fetchBookings({
+    String? customerId,
     String? therapistId,
   }) async {
-    final res = await supabase.from('booking').insert({
-      'user_id': userId,
-      'therapist_id': therapistId,
-      'room_id': roomId,
-      'timeslot_id': timeslotId,
-      'status': 'booked',
-      'recurrence_type': 'single',
-    }).select().single();
-
-    return Booking.fromJson(res);
-  }
-
-  Future<List<Booking>> createBookings({
-    required String userId,
-    required String therapistId,
-    required int roomId,
-    required List<int> timeslotIds,
-    required String recurrenceType,
-  }) async {
-    final recurrenceGroupId =
-        recurrenceType == 'single' ? null : const Uuid().v4();
-    final rows = [
-      for (final timeslotId in timeslotIds)
-        {
-          'user_id': userId,
-          'therapist_id': therapistId,
-          'room_id': roomId,
-          'timeslot_id': timeslotId,
-          'status': 'booked',
-          'recurrence_type': recurrenceType,
-          'recurrence_group_id': recurrenceGroupId,
-        },
-    ];
-
-    final res = await supabase.from('booking').insert(rows).select();
-    return (res as List)
+    var query = supabase.from('booking').select();
+    if (customerId != null) query = query.eq('customer_id', customerId);
+    if (therapistId != null) query = query.eq('therapist_id', therapistId);
+    final rows = await query.order('created_at', ascending: false);
+    return (rows as List)
         .map((row) => Booking.fromJson(Map<String, dynamic>.from(row)))
         .toList();
   }
-}
 
-class CancelBookingRepository {
-  Future<Booking> cancelBooking({
-    required int id,
+  Future<Booking> createBooking({
+    required String customerId,
+    required String bookingDate,
+    required String startTime,
+    required String endTime,
+    String? therapistId,
+    int? serviceId,
+    String? duration,
+    double? price,
+    String? notes,
   }) async {
-    final res = await supabase.from('booking').update({
-      'status': 'canceled',
-    }).eq('id', id).select().single();
-
-    return Booking.fromJson(res);
+    final row = await supabase.from('booking').insert({
+      'customer_id': customerId,
+      'booking_date': bookingDate,
+      'start_time': startTime,
+      'end_time': endTime,
+      'therapist_id': therapistId,
+      'service_id': serviceId,
+      'duration': duration,
+      'price': price,
+      'notes': notes,
+      'status': 'pending',
+    }).select().single();
+    return Booking.fromJson(row);
   }
-}
-class UpdateBookingRepository {
-  Future<Booking> updateBooking({
+
+  Future<Booking> updateStatus({
     required int id,
     required String status,
   }) async {
-    final res = await supabase.from('booking').update({
-      'status': status,
-    }).eq('id', id).select().single();
-
-    return Booking.fromJson(res);
+    const allowedStatuses = {'booked', 'pending', 'cancelled'};
+    if (!allowedStatuses.contains(status)) {
+      throw ArgumentError.value(status, 'status', 'Unsupported booking status');
+    }
+    final row = await supabase
+        .from('booking')
+        .update({'status': status})
+        .eq('id', id)
+        .select()
+        .single();
+    return Booking.fromJson(row);
   }
+
+  Future<Booking> cancelBooking(int id) =>
+      updateStatus(id: id, status: 'cancelled');
 }
