@@ -2,9 +2,16 @@ import '../../supabase_config.dart';
 import '../model/service.dart';
 
 class ServiceRepository {
-  Future<List<Service>> fetchServices({int? categoryId}) async {
+  Future<List<Service>> fetchServices({
+    int? categoryId,
+    List<int>? categoryIds,
+  }) async {
     var query = supabase.from('service').select();
-    if (categoryId != null) query = query.eq('category_id', categoryId);
+    if (categoryIds != null) {
+      query = query.inFilter('category_id', categoryIds);
+    } else if (categoryId != null) {
+      query = query.eq('category_id', categoryId);
+    }
     final rows = await query.order('name');
     return (rows as List)
         .map((row) => Service.fromJson(Map<String, dynamic>.from(row)))

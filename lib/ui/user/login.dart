@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../core/nav_bottom.dart';
-
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, this.initialSignUp = false});
 
@@ -53,12 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
           email: email,
           password: password,
         );
-        if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomeShell()),
-            (_) => false,
-          );
-        }
+        // AuthGate reacts to the new session and returns to the dashboard.
       }
     } on AuthException catch (error) {
       _showSnackBar(error.message);

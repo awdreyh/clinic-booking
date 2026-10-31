@@ -3,9 +3,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../dashboard/admin_dashboard.dart';
+import '../dashboard/customer_home.dart';
 import '../dashboard/therapist_dashboard.dart';
 import '../user/profile.dart';
-import '../therapist/list.dart';
 import '../dashboard/customer_dashboard.dart';
 import 'app_theme.dart';
 
@@ -132,74 +132,4 @@ class _HomeShellState extends State<HomeShell> {
       );
 }
 
-class CustomerHomePage extends StatelessWidget {
-  const CustomerHomePage({super.key, required this.onViewBookings});
 
-  final VoidCallback onViewBookings;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final user = Supabase.instance.client.auth.currentUser;
-    final metadataName = user?.userMetadata?['name']?.toString().trim();
-    final name = metadataName == null || metadataName.isEmpty
-        ? user?.email?.split('@').first
-        : metadataName;
-    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
-
-    return Scaffold(
-      appBar: AppBar(title: Text(isChinese ? '首页' : 'Dashboard')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          Text(
-            name == null ? l10n.welcomeUser : '${l10n.welcomeUser} $name',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isChinese ? '为您的身心健康找到合适的护理。' : 'Find thoughtful care for your wellbeing.',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.spa_outlined, size: 36, color: AppColors.accentDark),
-                  const SizedBox(height: 16),
-                  Text(
-                    isChinese ? '预约您的下一次护理' : 'Plan your next visit',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const TherapistListPage()),
-                      ),
-                      icon: const Icon(Icons.search),
-                      label: Text(l10n.addBooking),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: onViewBookings,
-                      icon: const Icon(Icons.event_note_outlined),
-                      label: Text(l10n.myBookings),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

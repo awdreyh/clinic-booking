@@ -13,9 +13,12 @@ class BookingStep1 extends StatelessWidget {
     required this.priceOptionsByService,
     required this.selectedService,
     required this.selectedPrice,
+    required this.isMember,
     required this.onCategorySelected,
     required this.onServiceSelected,
     required this.onPriceSelected,
+    required this.selectedExtraTime,
+    required this.onExtraTimeSelected,
   });
 
   final List<Category> categories;
@@ -24,10 +27,13 @@ class BookingStep1 extends StatelessWidget {
   final Map<int, List<BookingPriceOption>> priceOptionsByService;
   final Service? selectedService;
   final BookingPriceOption? selectedPrice;
+  final bool isMember;
+  final BookingPriceOption? selectedExtraTime;
   final ValueChanged<Category> onCategorySelected;
   final ValueChanged<Service> onServiceSelected;
   final void Function(Service service, BookingPriceOption option)
   onPriceSelected;
+  final ValueChanged<BookingPriceOption> onExtraTimeSelected;
 
   static const _ink = Color(0xFF30372B);
   static const _olive = Color(0xFF4A5D3E);
@@ -121,6 +127,7 @@ class BookingStep1 extends StatelessWidget {
                 selectedPrice: selectedService?.id == service.id
                     ? selectedPrice
                     : null,
+                isMember: isMember,
                 onTap: () => onServiceSelected(service),
                 onPriceSelected: (option) => onPriceSelected(service, option),
               ),
@@ -139,9 +146,14 @@ class BookingStep1 extends StatelessWidget {
             Wrap(
               spacing: 7,
               runSpacing: 7,
-              children: extraTimeOptions
-                  .map((option) => _ExtraTime(option: option))
-                  .toList(),
+              children: [
+                for (final option in extraTimeOptions)
+                  _ExtraTime(
+                    option: option,
+                    selected: option == selectedExtraTime,
+                    onTap: () => onExtraTimeSelected(option),
+                  ),
+              ],
             ),
           ],
           const SizedBox(height: 20),
@@ -274,6 +286,7 @@ class _ServiceCard extends StatelessWidget {
     required this.selected,
     required this.options,
     required this.selectedPrice,
+    required this.isMember,
     required this.onTap,
     required this.onPriceSelected,
   });
@@ -281,6 +294,7 @@ class _ServiceCard extends StatelessWidget {
   final bool selected;
   final List<BookingPriceOption> options;
   final BookingPriceOption? selectedPrice;
+  final bool isMember;
   final VoidCallback onTap;
   final ValueChanged<BookingPriceOption> onPriceSelected;
   @override
@@ -359,7 +373,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
               ],
             ),
-            if (selected && options.isNotEmpty) ...[
+            if (options.isNotEmpty) ...[
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -370,6 +384,7 @@ class _ServiceCard extends StatelessWidget {
                         child: _PriceOption(
                           option: option,
                           selected: option == selectedPrice,
+                          isMember: isMember,
                           onTap: () => onPriceSelected(option),
                         ),
                       ),
@@ -388,10 +403,12 @@ class _PriceOption extends StatelessWidget {
   const _PriceOption({
     required this.option,
     required this.selected,
+    required this.isMember,
     required this.onTap,
   });
   final BookingPriceOption option;
   final bool selected;
+  final bool isMember;
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => Material(
@@ -430,9 +447,42 @@ class _PriceOption extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                option.priceLabel,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF394633)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    isMember && option.membershipPrice != null
+                        ? '\$${option.membershipPrice!.toStringAsFixed(0)}'
+                        : option.priceLabel,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: isMember ? FontWeight.w700 : FontWeight.w400,
+                      color: isMember
+                          ? const Color(0xFF4A5D3E)
+                          : const Color(0xFF394633),
+                    ),
+                  ),
+                  if (!isMember && option.membershipPrice != null) ...[
+                    const Text(
+                      ' | ',
+                      style: TextStyle(fontSize: 10, color: Color(0xFFB9BBAE)),
+                    ),
+                    const Icon(
+                      Icons.card_membership,
+                      size: 10,
+                      color: Color(0xFF4A5D3E),
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      '\$${option.membershipPrice!.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF4A5D3E),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -443,32 +493,64 @@ class _PriceOption extends StatelessWidget {
 }
 
 class _ExtraTime extends StatelessWidget {
-  const _ExtraTime({required this.option});
+  const _ExtraTime({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
   final BookingPriceOption option;
+  final bool selected;
+  final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      border: Border.all(color: const Color(0xFFD9D9CE)),
+  Widget build(BuildContext context) => Material(
+    color: selected ? const Color(0xFFEEF1E7) : Colors.white,
+    borderRadius: BorderRadius.circular(5),
+    child: InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(5),
-    ),
-    child: Column(
-      children: [
-        Text(
-          '${option.duration ?? 0} min',
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF4A5D3E),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selected ? const Color(0xFF4A5D3E) : const Color(0xFFD9D9CE),
+            width: selected ? 1.4 : 1,
           ),
+          borderRadius: BorderRadius.circular(5),
         ),
-        const SizedBox(height: 2),
-        Text(
-          option.priceLabel,
-          style: const TextStyle(fontSize: 9, color: Color(0xFF73766C)),
+        child: Column(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${option.duration ?? 0} min',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: selected
+                        ? const Color(0xFF4A5D3E)
+                        : const Color(0xFF394633),
+                  ),
+                ),
+                if (selected) ...[
+                  const SizedBox(width: 4),
+                  const Icon(Icons.check, size: 11, color: Color(0xFF4A5D3E)),
+                ],
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '+${option.priceLabel}',
+              style: TextStyle(
+                fontSize: 9,
+                color: selected
+                    ? const Color(0xFF4A5D3E)
+                    : const Color(0xFF73766C),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     ),
   );
 }

@@ -34,18 +34,24 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
 
   int _step = 0;
   bool _loading = true;
+  bool _membershipLoaded = false;
+  bool _isMember = false;
+  String? _membershipError;
   bool _saving = false;
   String? _error;
   List<Category> _categoryItems = [];
   List<Service> _serviceItems = [];
   List<User> _therapistItems = [];
+  Map<String, List<Service>> _servicesByTherapist = {};
   List<BookingPriceOption> _priceOptions = [];
   Map<int, List<BookingPriceOption>> _priceOptionsByService = {};
   List<Timeslot> _slotItems = [];
   int? _categoryId;
   Service? _service;
   User? _therapist;
+  bool _anyTherapist = false;
   BookingPriceOption? _priceOption;
+  BookingPriceOption? _extraTime;
   DateTime _date = DateUtils.dateOnly(DateTime.now());
   Timeslot? _slot;
 
@@ -57,10 +63,56 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     return null;
   }
 
+  double? get _totalPrice {
+    final option = _priceOption;
+    if (option == null) return null;
+    return _priceFor(option) +
+        (_extraTime == null ? 0 : _priceFor(_extraTime!));
+  }
+
+  double _priceFor(BookingPriceOption option) =>
+      _isMember ? option.membershipPrice ?? option.price : option.price;
+
+  int? get _totalDuration {
+    final base = _priceOption?.duration;
+    if (base == null) return null;
+    return base + (_extraTime?.duration ?? 0);
+  }
+
   @override
   void initState() {
     super.initState();
     _loadCategories();
+    _loadCustomerMembership();
+  }
+
+  Future<void> _loadCustomerMembership() async {
+    final customerId = Supabase.instance.client.auth.currentUser?.id;
+    if (customerId == null) {
+      if (mounted) setState(() => _membershipLoaded = true);
+      return;
+    }
+    try {
+      final profile = await Supabase.instance.client
+          .from('user')
+          .select('is_member')
+          .eq('id', customerId)
+          .maybeSingle();
+      if (!mounted) return;
+      setState(() {
+        _isMember = profile?['is_member'] == true;
+        _membershipError = null;
+        _membershipLoaded = true;
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _membershipError = error.toString();
+          _error = 'Could not verify member pricing. Please retry.';
+          _membershipLoaded = true;
+        });
+      }
+    }
   }
 
   String _dateKey(DateTime date) =>
@@ -71,15 +123,16 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   Future<void> _loadCategories() async {
     try {
       final rows = await _categories.fetchCategories();
-      if (rows.isNotEmpty) {
+      final topLevel = _visibleCollections(rows);
+      if (topLevel.isNotEmpty) {
         final services = await _services.fetchServices(
-          categoryId: rows.first.id,
+          categoryIds: _categoryIdsWithChildren(rows, topLevel.first.id),
         );
         final prices = await _fetchPriceOptions(services);
         if (!mounted) return;
         setState(() {
           _categoryItems = rows;
-          _categoryId = rows.first.id;
+          _categoryId = topLevel.first.id;
           _serviceItems = services;
           _priceOptionsByService = prices;
           _loading = false;
@@ -107,7 +160,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     if (services.isEmpty) return {};
     final rows = await Supabase.instance.client
         .from('service_attribute')
-        .select('service_id, duration, sessions, price')
+        .select('service_id, duration, sessions, price, membership_price')
         .inFilter('service_id', services.map((service) => service.id).toList())
         .order('duration');
     final options = <int, List<BookingPriceOption>>{};
@@ -120,6 +173,20 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     return options;
   }
 
+  List<int> _categoryIdsWithChildren(List<Category> categories, int id) => [
+    id,
+    for (final category in categories)
+      if (category.parentId == id) category.id,
+  ];
+
+  // Offer groups packages and memberships but is not a bookable collection.
+  List<Category> _visibleCollections(List<Category> categories) => [
+    for (final category in categories)
+      if (category.parentId == null &&
+          category.name.trim().toLowerCase() != 'offer')
+        category,
+  ];
+
   Future<void> _selectCategory(Category category) async {
     setState(() {
       _loading = true;
@@ -127,12 +194,16 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       _categoryId = category.id;
       _service = null;
       _priceOption = null;
+      _extraTime = null;
       _therapist = null;
       _slot = null;
       _priceOptions = [];
+      _servicesByTherapist = {};
     });
     try {
-      final rows = await _services.fetchServices(categoryId: category.id);
+      final rows = await _services.fetchServices(
+        categoryIds: _categoryIdsWithChildren(_categoryItems, category.id),
+      );
       final prices = await _fetchPriceOptions(rows);
       if (!mounted) return;
       setState(() {
@@ -154,21 +225,26 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   Future<void> _selectService(Service service) async {
     final loadedOptions = _priceOptionsByService[service.id];
     if (service.id == _service?.id && loadedOptions != null) return;
+    // Cached prices update instantly; only therapist filtering stays async.
+    final cached = loadedOptions != null;
     setState(() {
-      _loading = true;
+      if (!cached) _loading = true;
       _error = null;
       _service = service;
-      _priceOption = null;
       _therapist = null;
+      _anyTherapist = false;
       _slot = null;
-      _priceOptions = [];
+      _priceOptions = loadedOptions ?? [];
+      _priceOption = loadedOptions == null || loadedOptions.isEmpty
+          ? null
+          : loadedOptions.first;
     });
     try {
       final attrs =
           loadedOptions ??
           (await Supabase.instance.client
                   .from('service_attribute')
-                  .select('duration, sessions, price')
+                  .select('duration, sessions, price, membership_price')
                   .eq('service_id', service.id)
                   .order('duration'))
               .map(
@@ -180,7 +256,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       final mappings = await _therapists.fetchServicesByTherapist(
         therapists.map((t) => t.id).toList(),
       );
-      if (!mounted) return;
+      if (!mounted || _service?.id != service.id) return;
       final availableTherapists = therapists
           .where(
             (therapist) =>
@@ -190,15 +266,16 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
           .toList();
       setState(() {
         _priceOptions = attrs;
-        _priceOption = attrs.isEmpty ? null : attrs.first;
+        _priceOption ??= attrs.isEmpty ? null : attrs.first;
         _therapistItems = availableTherapists;
+        _servicesByTherapist = mappings;
         _therapist = availableTherapists.isEmpty
             ? null
             : availableTherapists.first;
         _loading = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || _service?.id != service.id) return;
       setState(() {
         _loading = false;
         _error = error.toString();
@@ -209,18 +286,30 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   Future<void> _selectTherapist(User therapist) async {
     setState(() {
       _therapist = therapist;
+      _anyTherapist = false;
+      _slot = null;
+    });
+  }
+
+  void _selectAnyTherapist() {
+    setState(() {
+      _therapist = null;
+      _anyTherapist = true;
       _slot = null;
     });
   }
 
   Future<void> _loadSlots() async {
-    final therapist = _therapist;
-    if (therapist == null) return;
+    if (_therapist == null && !_anyTherapist) return;
     try {
       final rows = await _timeslots.fetchTimeslots(
         date: _dateKey(_date),
-        therapistId: therapist.id,
+        therapistId: _therapist?.id,
+        anyTherapistIds: _anyTherapist
+            ? [for (final therapist in _therapistItems) therapist.id]
+            : null,
         availableOnly: true,
+        requiredMinutes: _totalDuration,
       );
       if (!mounted) return;
       setState(() {
@@ -237,9 +326,39 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     }
   }
 
+  Future<User?> _findFreeTherapist() async {
+    final slot = _slot;
+    if (slot == null) return null;
+    final bookings = await Supabase.instance.client
+        .from('booking')
+        .select('therapist_id, start_time, end_time')
+        .eq('booking_date', slot.date)
+        .inFilter('status', ['booked', 'pending']);
+    int minutes(String time) {
+      final parts = time.split(':');
+      return int.parse(parts[0]) * 60 + int.parse(parts[1]);
+    }
+
+    final start = minutes(slot.startTime);
+    final end = minutes(slot.endTime);
+    final busy = <String>{};
+    for (final row in bookings as List) {
+      final values = Map<String, dynamic>.from(row);
+      final therapistId = values['therapist_id']?.toString();
+      if (therapistId == null) continue;
+      final bookingStart = minutes(values['start_time'].toString());
+      final bookingEnd = minutes(values['end_time'].toString());
+      if (bookingStart < end && start < bookingEnd) busy.add(therapistId);
+    }
+    for (final therapist in _therapistItems) {
+      if (!busy.contains(therapist.id)) return therapist;
+    }
+    return null;
+  }
+
   bool get _canContinue => switch (_step) {
     0 => _service != null && (_priceOptions.isEmpty || _priceOption != null),
-    1 => _therapist != null,
+    1 => _therapist != null || _anyTherapist,
     2 => _slot != null,
     _ => true,
   };
@@ -275,20 +394,31 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       );
       return;
     }
-    if (_therapist == null || _service == null || _slot == null) return;
+    if (_service == null || _slot == null) return;
+    if (_therapist == null && !_anyTherapist) return;
     setState(() => _saving = true);
     try {
+      final bookingTherapist = _anyTherapist
+          ? await _findFreeTherapist()
+          : _therapist;
+      if (!mounted) return;
+      if (bookingTherapist == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('That time was just taken. Please pick another.'),
+          ),
+        );
+        return;
+      }
       final booking = await _bookings.createBooking(
         customerId: customerId,
-        therapistId: _therapist!.id,
+        therapistId: bookingTherapist.id,
         bookingDate: _slot!.date,
         startTime: _slot!.startTime,
         endTime: _slot!.endTime,
         serviceId: _service!.id,
-        duration: _priceOption?.duration == null
-            ? null
-            : '${_priceOption!.duration} minutes',
-        price: _priceOption?.price,
+        duration: _totalDuration == null ? null : '$_totalDuration minutes',
+        price: _totalPrice,
       );
       if (!mounted) return;
       await Navigator.of(context).push(
@@ -296,8 +426,8 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
           builder: (_) => _PaymentPage(
             bookingId: booking.id,
             service: _service!,
-            therapist: _therapist!,
-            priceOption: _priceOption,
+            therapistName: bookingTherapist.name,
+            totalPrice: _totalPrice,
           ),
         ),
       );
@@ -335,21 +465,10 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
         ),
         centerTitle: true,
         title: _step <= 1
-            ? const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.spa_outlined, color: Color(0xFF4A5D3E), size: 20),
-                  SizedBox(width: 6),
-                  Text(
-                    'AUREA',
-                    style: TextStyle(
-                      fontFamily: 'serif',
-                      fontSize: 20,
-                      letterSpacing: .6,
-                      color: Color(0xFF30372B),
-                    ),
-                  ),
-                ],
+            ? Image.asset(
+                'assets/enso-logo.png',
+                height: 34,
+                fit: BoxFit.contain,
               )
             : Text(titles[_step]),
         actions: [
@@ -386,13 +505,13 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
         children: [
           _ProgressHeader(step: _step, title: titles[_step]),
           Expanded(
-            child: _loading
+            child: _loading || !_membershipLoaded
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
                 ? _ErrorPanel(message: _error!, onRetry: _retry)
                 : _buildStep(),
           ),
-          if (!_loading && _error == null) _bottomBar(),
+          if (!_loading && _membershipLoaded && _error == null) _bottomBar(),
         ],
       ),
     );
@@ -400,12 +519,14 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
 
   Widget _buildStep() => switch (_step) {
     0 => BookingStep1(
-      categories: _categoryItems,
+      categories: _visibleCollections(_categoryItems),
       categoryId: _categoryId,
       services: _serviceItems,
       priceOptionsByService: _priceOptionsByService,
       selectedService: _service,
       selectedPrice: _priceOption,
+      isMember: _isMember,
+      selectedExtraTime: _extraTime,
       onCategorySelected: _selectCategory,
       onServiceSelected: _selectService,
       onPriceSelected: (service, option) {
@@ -417,17 +538,27 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
           setState(() => _priceOption = option);
         }
       },
+      onExtraTimeSelected: (option) =>
+          setState(() => _extraTime = _extraTime == option ? null : option),
     ),
     1 => BookingStep2(
       service: _service,
       collectionName: _collectionName,
       priceOption: _priceOption,
+      extraTime: _extraTime,
       therapists: _therapistItems,
+      servicesByTherapist: _servicesByTherapist,
       selectedTherapist: _therapist,
+      anyTherapist: _anyTherapist,
       onSelected: _selectTherapist,
+      onAnySelected: _selectAnyTherapist,
       onEditService: () => setState(() => _step = 0),
     ),
     2 => BookingStep3(
+      service: _service,
+      collectionName: _collectionName,
+      priceOption: _priceOption,
+      extraTime: _extraTime,
       date: _date,
       slots: _slotItems,
       selectedSlot: _slot,
@@ -447,6 +578,8 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       date: _date,
       slot: _slot!,
       priceOption: _priceOption,
+      extraTime: _extraTime,
+      totalPrice: _totalPrice,
     ),
     _ => BookingStep5(
       service: _service!,
@@ -454,10 +587,22 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       date: _date,
       slot: _slot!,
       priceOption: _priceOption,
+      extraTime: _extraTime,
+      totalPrice: _totalPrice,
     ),
   };
 
   Future<void> _retry() async {
+    if (_membershipError != null) {
+      setState(() {
+        _loading = true;
+        _membershipLoaded = false;
+        _error = null;
+      });
+      await _loadCustomerMembership();
+      if (mounted && _membershipError == null) return _loadCategories();
+      return;
+    }
     if (_step >= 2) return _loadSlots();
     if (_step == 1 && _therapist != null) {
       setState(() {
@@ -477,7 +622,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
 
   Widget _bottomBar() {
     if (_step <= 1) {
-      final price = _priceOption?.price;
+      final price = _totalPrice;
       final isTherapistStep = _step == 1;
       return SafeArea(
         top: false,
@@ -497,7 +642,9 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isTherapistStep
+                          _isMember
+                              ? 'Member total'
+                              : isTherapistStep
                               ? 'Treatment price'
                               : 'Selected treatment',
                           style: TextStyle(
@@ -508,17 +655,25 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                         Text(
                           price == null
                               ? 'Choose a service'
-                              : '\$${price.toStringAsFixed(2)}',
+                              : '\$${price.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontSize: 19,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFF30372B),
                           ),
                         ),
+                        if (_extraTime != null)
+                          const Text(
+                            'Includes extra time',
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Color(0xFF77796E),
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                  if (isTherapistStep && _therapist != null)
+                  if (isTherapistStep && (_therapist != null || _anyTherapist))
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -529,7 +684,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        _therapist!.name,
+                        _anyTherapist ? 'No preference' : _therapist!.name,
                         style: TextStyle(
                           fontSize: 10,
                           color: Color(0xFF4A5D3E),
@@ -539,36 +694,62 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                 ],
               ),
               const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: FilledButton(
-                  onPressed: _saving ? null : (_canContinue ? _next : null),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A5D3E),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              Row(
+                children: [
+                  if (isTherapistStep) ...[
+                    SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: _saving
+                            ? null
+                            : () => setState(() => _step = 0),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF4A5D3E),
+                          side: const BorderSide(color: Color(0xFF4A5D3E)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Back'),
+                      ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _saving
-                            ? 'Please wait...'
-                            : isTherapistStep
-                            ? 'Choose date & time'
-                            : 'Choose your therapist',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: FilledButton(
+                        onPressed: _saving
+                            ? null
+                            : (_canContinue ? _next : null),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF4A5D3E),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _saving
+                                  ? 'Please wait...'
+                                  : isTherapistStep
+                                  ? 'Choose date & time'
+                                  : 'Choose your therapist',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward, size: 20),
+                          ],
                         ),
                       ),
-                      const Icon(Icons.arrow_forward, size: 20),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -617,13 +798,13 @@ class _PaymentPage extends StatelessWidget {
   const _PaymentPage({
     required this.bookingId,
     required this.service,
-    required this.therapist,
-    required this.priceOption,
+    required this.therapistName,
+    required this.totalPrice,
   });
   final int bookingId;
   final Service service;
-  final User therapist;
-  final BookingPriceOption? priceOption;
+  final String therapistName;
+  final double? totalPrice;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -639,7 +820,7 @@ class _PaymentPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Request #$bookingId is pending confirmation with ${therapist.name}.',
+          'Request #$bookingId is pending confirmation with $therapistName.',
         ),
         const SizedBox(height: 20),
         BookingSummaryTile(
@@ -647,11 +828,11 @@ class _PaymentPage extends StatelessWidget {
           label: 'Service',
           value: service.name,
         ),
-        if (priceOption != null)
+        if (totalPrice != null)
           BookingSummaryTile(
             icon: Icons.payments_outlined,
             label: 'Amount',
-            value: priceOption!.priceLabel,
+            value: '\$${totalPrice!.toStringAsFixed(0)}',
           ),
         const SizedBox(height: 20),
         const Card(

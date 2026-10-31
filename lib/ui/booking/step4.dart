@@ -13,54 +13,65 @@ class BookingStep4 extends StatelessWidget {
     required this.date,
     required this.slot,
     required this.priceOption,
+    required this.extraTime,
+    required this.totalPrice,
   });
 
   final Service service;
-  final User therapist;
+  final User? therapist;
   final DateTime date;
   final Timeslot slot;
   final BookingPriceOption? priceOption;
+  final BookingPriceOption? extraTime;
+  final double? totalPrice;
 
   @override
   Widget build(BuildContext context) => ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Text(
-            'Review your appointment',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          BookingSummaryTile(
-            icon: Icons.spa_outlined,
-            label: 'Service',
-            value: service.name,
-          ),
-          if (priceOption != null)
-            BookingSummaryTile(
-              icon: Icons.timelapse,
-              label: 'Duration',
-              value: priceOption!.label,
-            ),
-          BookingSummaryTile(
-            icon: Icons.person_outline,
-            label: 'Therapist',
-            value: therapist.name,
-          ),
-          BookingSummaryTile(
-            icon: Icons.calendar_month_outlined,
-            label: 'Date & time',
-            value: '${MaterialLocalizations.of(context).formatMediumDate(date)} · ${formatBookingTimeRange(context, slot)}',
-          ),
-          if (priceOption != null)
-            BookingSummaryTile(
-              icon: Icons.payments_outlined,
-              label: 'Total',
-              value: priceOption!.priceLabel,
-            ),
-          const SizedBox(height: 16),
-          const Text(
-            'Your booking will be sent as a pending request. Payment options are shown after confirmation.',
-          ),
-        ],
-      );
+    padding: const EdgeInsets.all(20),
+    children: [
+      Text(
+        'Review your appointment',
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
+      const SizedBox(height: 12),
+      BookingSummaryTile(
+        icon: Icons.spa_outlined,
+        label: 'Service',
+        value: service.name,
+      ),
+      if (priceOption != null)
+        BookingSummaryTile(
+          icon: Icons.timelapse,
+          label: 'Duration',
+          value: priceOption!.label,
+        ),
+      if (extraTime != null)
+        BookingSummaryTile(
+          icon: Icons.more_time,
+          label: 'Extra time',
+          value: '+${extraTime!.duration} min · ${extraTime!.priceLabel}',
+        ),
+      BookingSummaryTile(
+        icon: Icons.person_outline,
+        label: 'Therapist',
+        value: therapist?.name ?? 'No preference',
+      ),
+      BookingSummaryTile(
+        icon: Icons.calendar_month_outlined,
+        label: 'Date & time',
+        value:
+            '${MaterialLocalizations.of(context).formatMediumDate(date)} · ${formatBookingTimeRange(context, slot)}',
+      ),
+      if (totalPrice != null)
+        BookingSummaryTile(
+          icon: Icons.payments_outlined,
+          label: 'Total',
+          value: '\$${totalPrice!.toStringAsFixed(0)}',
+        ),
+      const SizedBox(height: 16),
+      const Text(
+        'Your booking will be sent as a pending request. Payment options are shown after confirmation.',
+      ),
+    ],
+  );
 }

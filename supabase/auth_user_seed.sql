@@ -63,6 +63,14 @@ values
     now(), '021298764', now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{"name":"Audrey Hong","phone":"021298764"}'::jsonb, now(), now()
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '4fc7d318-71e9-4f03-b12c-9e276aa75107', 'authenticated', 'authenticated',
+    'hxy@example.com', extensions.crypt('123456', extensions.gen_salt('bf')),
+    now(), null, null,
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{"name":"HXY"}'::jsonb, now(), now()
   )
 on conflict (id) do update set
   instance_id = excluded.instance_id,
@@ -93,7 +101,8 @@ where id in (
   '4fc7d318-71e9-4f03-b12c-9e276aa75103',
   '4fc7d318-71e9-4f03-b12c-9e276aa75104',
   '4fc7d318-71e9-4f03-b12c-9e276aa75105',
-  '4fc7d318-71e9-4f03-b12c-9e276aa75106'
+  '4fc7d318-71e9-4f03-b12c-9e276aa75106',
+  '4fc7d318-71e9-4f03-b12c-9e276aa75107'
 );
 
 -- Create the email identities required by Supabase Auth password sign-in.
@@ -149,6 +158,13 @@ values
     '4fc7d318-71e9-4f03-b12c-9e276aa75106',
     '{"sub":"4fc7d318-71e9-4f03-b12c-9e276aa75106","email":"audrey.hong@gmail.com","email_verified":true,"phone_verified":true}'::jsonb,
     'email', now(), now(), now()
+  ),
+  (
+    '5fc7d318-71e9-4f03-b12c-9e276aa75107',
+    '4fc7d318-71e9-4f03-b12c-9e276aa75107',
+    '4fc7d318-71e9-4f03-b12c-9e276aa75107',
+    '{"sub":"4fc7d318-71e9-4f03-b12c-9e276aa75107","email":"hxy@example.com","email_verified":true}'::jsonb,
+    'email', now(), now(), now()
   )
 on conflict (id) do update set
   provider_id = excluded.provider_id,
@@ -158,21 +174,27 @@ on conflict (id) do update set
   updated_at = excluded.updated_at;
 
 -- The auth trigger creates customer profiles; promote these seeded profiles.
-insert into public."user" (id, name, email, phone, role, is_active)
+insert into public."user" (id, name, email, phone, role, is_active, description)
 values
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75101', 'Ray', 'ray@example.com', '021-123456', 'therapist', true),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75102', 'Amy', 'amy@example.com', '021-1234561', 'therapist', true),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75103', 'Tina', 'tina@example.com', '021-1234562', 'therapist', true),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75104', 'Min', 'min@example.com', '021-1234563', 'therapist', true),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75105', 'Audrey', 'audrey@example', '021-111222', 'customer', true),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75106', 'Audrey Hong', 'audrey.hong@gmail.com', '021298764', 'admin', true)
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75101', 'Ray', 'ray@example.com', '021-123456', 'therapist', true, 'Therapeutic massage therapist specializing in deep tissue and recovery care.'),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75102', 'Amy', 'amy@example.com', '021-1234561', 'therapist', true, 'Wellness therapist focused on restorative massage and gentle relaxation.'),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75103', 'Tina', 'tina@example.com', '021-1234562', 'therapist', true, 'Holistic therapist offering attentive, calming treatments tailored to your needs.'),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75104', 'Min', 'min@example.com', '021-1234563', 'therapist', true, 'Massage therapist with a thoughtful, client-centred approach to care.'),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75105', 'Audrey', 'audrey@example', '021-111222', 'customer', true, null),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75106', 'Audrey Hong', 'audrey.hong@gmail.com', '021298764', 'admin', true, null),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75107', 'HXY', 'hxy@example.com', null, 'customer', true, null)
 on conflict (id) do update set
   name = excluded.name,
   email = excluded.email,
   phone = excluded.phone,
   role = excluded.role,
   is_active = excluded.is_active,
+  description = excluded.description,
   updated_at = now();
+
+update public."user"
+set is_member = true
+where id = '4fc7d318-71e9-4f03-b12c-9e276aa75107';
 
 -- Link every seeded therapist to every service already present in the catalog.
 insert into public.service_therapist (therapist_id, service_id)

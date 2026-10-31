@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
+import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
 import 'booking_step_shared.dart';
 
 class BookingStep3 extends StatelessWidget {
   const BookingStep3({
     super.key,
+    required this.service,
+    required this.collectionName,
+    required this.priceOption,
+    required this.extraTime,
     required this.date,
     required this.slots,
     required this.selectedSlot,
@@ -13,6 +18,10 @@ class BookingStep3 extends StatelessWidget {
     required this.onSlotSelected,
   });
 
+  final Service? service;
+  final String? collectionName;
+  final BookingPriceOption? priceOption;
+  final BookingPriceOption? extraTime;
   final DateTime date;
   final List<Timeslot> slots;
   final Timeslot? selectedSlot;
@@ -23,6 +32,13 @@ class BookingStep3 extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
         children: [
+          BookingServiceSummary(
+            service: service,
+            collectionName: collectionName,
+            priceOption: priceOption,
+            extraTime: extraTime,
+          ),
+          const SizedBox(height: 12),
           CalendarDatePicker(
             initialDate: date,
             firstDate: DateUtils.dateOnly(DateTime.now()),

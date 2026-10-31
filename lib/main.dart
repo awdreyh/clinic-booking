@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +25,7 @@ void main() async {
 }
 
 final supabase = Supabase.instance.client;
+final _navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.localeProvider});
@@ -37,6 +40,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<LocaleProvider>(
         builder: (context, locale, _) {
           return MaterialApp(
+            navigatorKey: _navigatorKey,
             title: 'Clinic Booking',
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB9C697)),
@@ -60,26 +64,45 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<AuthState>(
-      stream: supabase.auth.onAuthStateChange.handleError((error) {
-    debugPrint('Auth stream error: $error');
-  }),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+  State<AuthGate> createState() => _AuthGateState();
+}
 
-        final session = snapshot.data?.session ?? supabase.auth.currentSession;
-        return session != null ? const HomeShell() : const WelcomePage();
-      },
+class _AuthGateState extends State<AuthGate> {
+  late final StreamSubscription<AuthState> _authSubscription;
+  late bool _signedIn;
+
+  @override
+  void initState() {
+    super.initState();
+    _signedIn = supabase.auth.currentSession != null;
+    _authSubscription = supabase.auth.onAuthStateChange.listen(
+      _onAuthStateChange,
+      onError: (Object error) => debugPrint('Auth stream error: $error'),
     );
   }
+
+  void _onAuthStateChange(AuthState state) {
+    final signedIn = state.session != null;
+    if (signedIn == _signedIn) return;
+    setState(() => _signedIn = signedIn);
+    // Pushed routes (sign-in, guest browsing, booking) hide the auth change.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      _signedIn ? const HomeShell() : const WelcomePage();
 }
 

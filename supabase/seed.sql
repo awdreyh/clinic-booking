@@ -9,8 +9,23 @@ from (
     (
       'Premium Therapy Collection',
       'Our Premium Therapy Collection offers specialised treatments that enhance the benefits of traditional massage through advanced therapeutic techniques. Featuring Hot Stone Therapy and Lymphatic Drainage Therapy, these treatments help improve circulation, encourage detoxification, ease muscular tension, and promote deep relaxation and recovery.'
+    ),
+    (
+      'Offer',
+      'Value packages and memberships for regular visits.'
     )
 ) as seed(name, description)
+where not exists (
+  select 1
+  from public.category existing
+  where existing.name = seed.name
+);
+
+-- Package and Membership are child categories of Offer.
+insert into public.category (name, parent_id)
+select seed.name, offer.id
+from (values ('Package'), ('Membership')) as seed(name)
+join public.category offer on offer.name = 'Offer'
 where not exists (
   select 1
   from public.category existing
@@ -23,8 +38,6 @@ select seed.service_name, category.id from (values
   ('Signature Wellness Collection', 'Chinese Acupressure'),
   ('Signature Wellness Collection', 'Deep Tissue Massage'),
   ('Signature Wellness Collection', 'Foot Reflexology'),
-  ('Signature Wellness Collection', 'Hot Stone Massage'),
-  ('Signature Wellness Collection', 'Lymphatic Drainage'),
   ('Signature Wellness Collection', 'Extra time'),
   ('Premium Therapy Collection', 'Lymphatic Drainage Massage'),
   ('Premium Therapy Collection', 'Hot Stone Massage'),
@@ -55,14 +68,8 @@ select service.id, seed.duration, seed.sessions, seed.price from (values
   ('Signature Wellness Collection', 'Foot Reflexology', 60, null, 118),
   ('Signature Wellness Collection', 'Foot Reflexology', 90, null, 168),
   ('Signature Wellness Collection', 'Foot Reflexology', 120, null, 218),
-  ('Signature Wellness Collection', 'Hot Stone Massage', 30, null, 68),
-  ('Signature Wellness Collection', 'Hot Stone Massage', 60, null, 118),
-  ('Signature Wellness Collection', 'Hot Stone Massage', 90, null, 168),
-  ('Signature Wellness Collection', 'Hot Stone Massage', 120, null, 218),
-  ('Signature Wellness Collection', 'Lymphatic Drainage', 30, null, 68),
-  ('Signature Wellness Collection', 'Lymphatic Drainage', 60, null, 118),
-  ('Signature Wellness Collection', 'Lymphatic Drainage', 90, null, 168),
-  ('Signature Wellness Collection', 'Lymphatic Drainage', 120, null, 218),
+
+
   ('Signature Wellness Collection', 'Extra time', 10, null, 20),
   ('Signature Wellness Collection', 'Extra time', 15, null, 30),
   ('Signature Wellness Collection', 'Extra time', 20, null, 40),
@@ -80,12 +87,12 @@ select service.id, seed.duration, seed.sessions, seed.price from (values
   ('Premium Therapy Collection', 'extra time', 20, null, 45),
   ('Premium Therapy Collection', 'extra time', 30, null, 65),
   ('Membership', 'Annual Membership', null, null, 200),
-  ('Package', '60-mins value pack', null, 3, 299),
-  ('Package', '60-mins value pack', null, 5, 480),
-  ('Package', '60-mins value pack', null, 10, 880),
-  ('Package', '30-mins value pack', null, 3, 180),
-  ('Package', '30-mins value pack', null, 5, 280),
-  ('Package', '30-mins value pack', null, 10, 500)
+  ('Package', '60-mins value pack', null, 3, 354),
+  ('Package', '60-mins value pack', null, 5, 590),
+  ('Package', '60-mins value pack', null, 10, 1180),
+  ('Package', '30-mins value pack', null, 3, 204),
+  ('Package', '30-mins value pack', null, 5, 340),
+  ('Package', '30-mins value pack', null, 10, 680)
 ) as seed(category_name, service_name, duration, sessions, price)
 join public.category category on category.name = seed.category_name
 join public.service service on service.category_id = category.id and service.name = seed.service_name

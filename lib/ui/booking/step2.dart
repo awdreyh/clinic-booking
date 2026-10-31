@@ -10,18 +10,26 @@ class BookingStep2 extends StatelessWidget {
     required this.service,
     required this.collectionName,
     required this.priceOption,
+    required this.extraTime,
     required this.therapists,
+    required this.servicesByTherapist,
     required this.selectedTherapist,
+    required this.anyTherapist,
     required this.onSelected,
+    required this.onAnySelected,
     required this.onEditService,
   });
 
   final Service? service;
   final String? collectionName;
   final BookingPriceOption? priceOption;
+  final BookingPriceOption? extraTime;
   final List<User> therapists;
+  final Map<String, List<Service>> servicesByTherapist;
   final User? selectedTherapist;
+  final bool anyTherapist;
   final ValueChanged<User> onSelected;
+  final VoidCallback onAnySelected;
   final VoidCallback onEditService;
 
   static const _ink = Color(0xFF30372B);
@@ -57,10 +65,11 @@ class BookingStep2 extends StatelessWidget {
         style: TextStyle(fontSize: 13, color: _muted),
       ),
       const SizedBox(height: 20),
-      _ServiceSummary(
+      BookingServiceSummary(
         service: service,
         collectionName: collectionName,
         priceOption: priceOption,
+        extraTime: extraTime,
         onEdit: onEditService,
       ),
       const SizedBox(height: 20),
@@ -88,9 +97,11 @@ class BookingStep2 extends StatelessWidget {
         for (final therapist in therapists)
           _TherapistCard(
             therapist: therapist,
+            services: servicesByTherapist[therapist.id] ?? const [],
             selected: therapist.id == selectedTherapist?.id,
             onTap: () => onSelected(therapist),
           ),
+      _NoPreferenceCard(selected: anyTherapist, onTap: onAnySelected),
       const SizedBox(height: 8),
       const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,83 +122,72 @@ class BookingStep2 extends StatelessWidget {
   );
 }
 
-class _ServiceSummary extends StatelessWidget {
-  const _ServiceSummary({
-    required this.service,
-    required this.collectionName,
-    required this.priceOption,
-    required this.onEdit,
-  });
+class _NoPreferenceCard extends StatelessWidget {
+  const _NoPreferenceCard({required this.selected, required this.onTap});
 
-  final Service? service;
-  final String? collectionName;
-  final BookingPriceOption? priceOption;
-  final VoidCallback onEdit;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    margin: const EdgeInsets.only(bottom: 10),
     decoration: BoxDecoration(
-      color: const Color(0xFFF0EEE5),
-      borderRadius: BorderRadius.circular(13),
+      color: selected ? const Color(0xFFEEF1E7) : Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: selected ? const Color(0xFF526447) : const Color(0xFFDDDCCF),
+        width: selected ? 1.4 : 1,
+      ),
     ),
-    child: Row(
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.spa_outlined, color: Color(0xFF4A5D3E)),
-        ),
-        const SizedBox(width: 11),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                service?.name ?? 'Selected treatment',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF30372B),
-                ),
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEEF1E7),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 2),
-              Text(
-                [
-                  if (collectionName?.isNotEmpty == true) collectionName!,
-                  if (priceOption?.duration != null)
-                    '${priceOption!.duration} min',
-                ].join(' · '),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF797A6F)),
+              child: const Icon(
+                Icons.shuffle,
+                color: Color(0xFF4A5D3E),
+                size: 20,
               ),
-            ],
-          ),
-        ),
-        TextButton(
-          onPressed: onEdit,
-          style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF4A5D3E),
-            minimumSize: Size.zero,
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: const Text(
-            'Edit',
-            style: TextStyle(
-              fontSize: 11,
-              decoration: TextDecoration.underline,
             ),
-          ),
+            const SizedBox(width: 11),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'No preference',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF30372B),
+                    ),
+                  ),
+                  Text(
+                    "We'll match you with an available therapist.",
+                    style: TextStyle(fontSize: 11, color: Color(0xFF797A6F)),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              const Icon(
+                Icons.check_circle,
+                color: Color(0xFF4A5D3E),
+                size: 20,
+              ),
+          ],
         ),
-      ],
+      ),
     ),
   );
 }
@@ -195,11 +195,13 @@ class _ServiceSummary extends StatelessWidget {
 class _TherapistCard extends StatelessWidget {
   const _TherapistCard({
     required this.therapist,
+    required this.services,
     required this.selected,
     required this.onTap,
   });
 
   final User therapist;
+  final List<Service> services;
   final bool selected;
   final VoidCallback onTap;
 
@@ -289,6 +291,19 @@ class _TherapistCard extends StatelessWidget {
                             ),
                           ),
                         ],
+                        if (services.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Services · ${services.map((service) => service.name).join(' · ')}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              height: 1.3,
+                              color: Color(0xFF4A5D3E),
+                            ),
+                          ),
+                        ],
                         if (experience != null) ...[
                           const SizedBox(height: 4),
                           Text(
@@ -337,27 +352,6 @@ class _TherapistCard extends StatelessWidget {
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 9),
                 child: Divider(height: 1, color: Color(0xFFD8D7CA)),
-              ),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_month_outlined,
-                    size: 14,
-                    color: Color(0xFF4A5D3E),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Provides your selected treatment',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: selected
-                            ? const Color(0xFF4A5D3E)
-                            : const Color(0xFF686C60),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

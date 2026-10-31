@@ -1,27 +1,35 @@
 import 'package:flutter/material.dart';
 
 import '../../data/model/category.dart';
+import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
 
 class BookingPriceOption {
-  const BookingPriceOption({this.duration, this.sessions, required this.price});
+  const BookingPriceOption({
+    this.duration,
+    this.sessions,
+    required this.price,
+    this.membershipPrice,
+  });
 
   final int? duration;
   final int? sessions;
   final double price;
+  final double? membershipPrice;
 
   String get label => duration != null
       ? '$duration minutes'
       : sessions != null
           ? '$sessions sessions'
           : 'Standard';
-  String get priceLabel => '\$${price.toStringAsFixed(2)}';
+  String get priceLabel => '\$${price.toStringAsFixed(0)}';
 
   factory BookingPriceOption.fromJson(Map<String, dynamic> json) =>
       BookingPriceOption(
         duration: (json['duration'] as num?)?.toInt(),
         sessions: (json['sessions'] as num?)?.toInt(),
         price: (json['price'] as num).toDouble(),
+        membershipPrice: (json['membership_price'] as num?)?.toDouble(),
       );
 
   @override
@@ -29,10 +37,100 @@ class BookingPriceOption {
       other is BookingPriceOption &&
       other.duration == duration &&
       other.sessions == sessions &&
-      other.price == price;
+      other.price == price &&
+      other.membershipPrice == membershipPrice;
 
   @override
-  int get hashCode => Object.hash(duration, sessions, price);
+  int get hashCode => Object.hash(duration, sessions, price, membershipPrice);
+}
+
+class BookingServiceSummary extends StatelessWidget {
+  const BookingServiceSummary({
+    super.key,
+    required this.service,
+    this.collectionName,
+    this.priceOption,
+    this.extraTime,
+    this.onEdit,
+  });
+
+  final Service? service;
+  final String? collectionName;
+  final BookingPriceOption? priceOption;
+  final BookingPriceOption? extraTime;
+  final VoidCallback? onEdit;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF0EEE5),
+      borderRadius: BorderRadius.circular(13),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.spa_outlined, color: Color(0xFF4A5D3E)),
+        ),
+        const SizedBox(width: 11),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                service?.name ?? 'Selected treatment',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF30372B),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                [
+                  if (collectionName?.isNotEmpty == true) collectionName!,
+                  if (priceOption != null)
+                    priceOption!.duration != null
+                        ? '${priceOption!.duration} min'
+                        : priceOption!.label,
+                  if (extraTime != null)
+                    '+${extraTime!.duration ?? 0} min extra time',
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 10, color: Color(0xFF797A6F)),
+              ),
+            ],
+          ),
+        ),
+        if (onEdit != null)
+          TextButton(
+            onPressed: onEdit,
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF4A5D3E),
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Edit',
+              style: TextStyle(
+                fontSize: 11,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 String formatBookingTimeRange(BuildContext context, Timeslot slot) {
