@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../therapist/list.dart';
 import '../user/login.dart';
+import '../core/welcome_page.dart';
 
 class GuestDashboard extends StatelessWidget {
   const GuestDashboard({super.key});
@@ -25,6 +26,13 @@ class GuestDashboard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Back to welcome page',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const WelcomePage()),
+          ),
+        ),
         title: const Text('Clinic Booking'),
         actions: [
           TextButton(

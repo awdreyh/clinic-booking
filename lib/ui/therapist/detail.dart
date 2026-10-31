@@ -99,14 +99,14 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
           SizedBox(
             height: 240,
             width: double.infinity,
-            child: therapist.profilePicture == null ||
-                    therapist.profilePicture!.isEmpty
+            child: therapist.photoUrl == null ||
+                    therapist.photoUrl!.isEmpty
                 ? Container(
                     color: colors.surfaceContainerHighest,
                     child: const Icon(Icons.person, size: 90),
                   )
                 : Image.network(
-                    therapist.profilePicture!,
+                    therapist.photoUrl!,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
                       color: colors.surfaceContainerHighest,

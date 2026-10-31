@@ -12,11 +12,13 @@ class CategoryRepository {
   Future<Category> createCategory({
     required String name,
     String? description,
+    String? image,
     int? parentId,
   }) async {
     final row = await supabase.from('category').insert({
       'name': name,
       'description': description,
+      'image': image,
       'parent_id': parentId,
     }).select().single();
     return Category.fromJson(row);
@@ -26,6 +28,7 @@ class CategoryRepository {
     final row = await supabase.from('category').update({
       'name': category.name,
       'description': category.description,
+      'image': category.image,
       'parent_id': category.parentId,
     }).eq('id', category.id).select().single();
     return Category.fromJson(row);

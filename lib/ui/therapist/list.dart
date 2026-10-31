@@ -94,7 +94,7 @@ class _TherapistListPageState extends State<TherapistListPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _TherapistPhoto(url: therapist.profilePicture),
+                            _TherapistPhoto(url: therapist.photoUrl),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(

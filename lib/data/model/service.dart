@@ -3,6 +3,7 @@ class Service {
     required this.id,
     required this.name,
     this.description,
+    this.image,
     this.categoryId,
     this.createdAt,
   });
@@ -10,6 +11,7 @@ class Service {
   final int id;
   final String name;
   final String? description;
+  final String? image;
   final int? categoryId;
   final DateTime? createdAt;
 
@@ -17,6 +19,7 @@ class Service {
         id: (json['id'] as num).toInt(),
         name: json['name'] as String,
         description: json['description'] as String?,
+        image: json['image'] as String?,
         categoryId: (json['category_id'] as num?)?.toInt(),
         createdAt: json['created_at'] == null
             ? null
@@ -27,6 +30,7 @@ class Service {
         'id': id,
         'name': name,
         'description': description,
+        'image': image,
         'category_id': categoryId,
         'created_at': createdAt?.toIso8601String(),
       };

@@ -13,6 +13,7 @@ class User {
     this.memberSince,
     this.membershipExpires,
     this.profilePicture,
+    this.photo,
     this.meta,
     this.address,
     this.createdAt,
@@ -30,10 +31,13 @@ class User {
   final DateTime? memberSince;
   final DateTime? membershipExpires;
   final String? profilePicture;
+  final String? photo;
   final Map<String, dynamic>? meta;
   final String? address;
   final String role;
   final DateTime? createdAt;
+
+  String? get photoUrl => photo?.isNotEmpty == true ? photo : profilePicture;
 
   factory User.fromJson(Map<String, dynamic> json) => User(
         id: json['id'] as String,
@@ -48,6 +52,7 @@ class User {
         memberSince: _dateTime(json['member_since']),
         membershipExpires: _dateTime(json['membership_expires']),
         profilePicture: json['profile_picture'] as String?,
+        photo: json['photo'] as String?,
         meta: (json['meta'] as Map?)?.cast<String, dynamic>(),
         address: json['address'] as String?,
         role: json['role'] as String? ?? 'customer',

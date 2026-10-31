@@ -13,6 +13,7 @@ create table public.user (
   member_since timestamp with time zone,
   membership_expires timestamp with time zone,
   profile_picture text,
+  photo text,
   meta jsonb,
   address text,
   role public.user_role not null default 'customer',
@@ -65,6 +66,7 @@ create table public.category (
   id bigint generated always as identity primary key,
   name text not null,
   description text,
+  image text,
   parent_id bigint references public.category(id) on delete cascade,
   created_at timestamp with time zone default now()
 );
@@ -73,6 +75,7 @@ create table public.service (
   id bigint generated always as identity primary key,
   name text not null,
   description text,
+  image text,
   category_id bigint references public.category(id) on delete cascade,  
   created_at timestamp with time zone default now()
 );
@@ -80,10 +83,14 @@ create table public.service (
 
 create table public.service_attribute (
   id bigint generated always as identity primary key,
-  service_id bigint references public.service(id) on delete cascade,
-  attribute_key text not null,
-  attribute_value text not null,
-  created_at timestamp with time zone default now()
+  service_id bigint not null references public.service(id) on delete cascade,
+  duration integer,
+  sessions integer,
+  price numeric(10,2) not null,
+  created_at timestamp with time zone default now(),
+  check (duration is null or sessions is null),
+  unique (service_id, duration),
+  unique (service_id, sessions)
 );
 
 create table public.service_therapist (

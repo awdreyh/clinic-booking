@@ -14,11 +14,13 @@ class ServiceRepository {
   Future<Service> createService({
     required String name,
     String? description,
+    String? image,
     int? categoryId,
   }) async {
     final row = await supabase.from('service').insert({
       'name': name,
       'description': description,
+      'image': image,
       'category_id': categoryId,
     }).select().single();
     return Service.fromJson(row);
@@ -28,6 +30,7 @@ class ServiceRepository {
     final row = await supabase.from('service').update({
       'name': service.name,
       'description': service.description,
+      'image': service.image,
       'category_id': service.categoryId,
     }).eq('id', service.id).select().single();
     return Service.fromJson(row);

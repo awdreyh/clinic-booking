@@ -33,6 +33,7 @@ class UserRepository {
       'member_since': user.memberSince?.toIso8601String(),
       'membership_expires': user.membershipExpires?.toIso8601String(),
       'profile_picture': user.profilePicture,
+      'photo': user.photo,
       'meta': user.meta,
       'address': user.address,
       'role': user.role,

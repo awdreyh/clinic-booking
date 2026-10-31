@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../l10n/app_localizations.dart';
-import '../therapist/list.dart';
+import '../booking/add.dart';
 
 class CustomerDashboard extends StatefulWidget {
   const CustomerDashboard({super.key});
@@ -104,7 +104,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
   Future<void> _openBooking() async {
     await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const TherapistListPage()),
+      MaterialPageRoute(builder: (_) => const BookingConfirmPage()),
     );
     if (mounted) await _refreshBookings();
   }

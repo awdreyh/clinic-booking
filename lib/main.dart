@@ -7,7 +7,7 @@ import 'supabase_config.dart';
 import 'ui/core/nav_bottom.dart';
 import 'ui/core/locale_provider.dart';
 import 'ui/core/language_prompt.dart';
-import 'ui/dashboard/guest_dashboard.dart';
+import 'ui/core/welcome_page.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -39,7 +39,8 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Clinic Booking',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB9C697)),
+              scaffoldBackgroundColor: const Color(0xFFF8F9F5),
             ),
             locale: locale.locale,
             supportedLocales: LocaleProvider.supportedLocales,
@@ -76,7 +77,7 @@ class AuthGate extends StatelessWidget {
         }
 
         final session = snapshot.data?.session ?? supabase.auth.currentSession;
-        return session != null ? const HomeShell() : const GuestDashboard();
+        return session != null ? const HomeShell() : const WelcomePage();
       },
     );
   }
