@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (userId == null) {
       setState(() {
         _loading = false;
-        _loadError = 'Please sign in again.';
+        _loadError = AppLocalizations.of(context).tr('Please sign in again.');
       });
       return;
     }
@@ -54,7 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (row == null) {
         setState(() {
           _loading = false;
-          _loadError = 'Profile not found.';
+          _loadError = AppLocalizations.of(context).tr('Profile not found.');
         });
         return;
       }
@@ -67,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _loadError = 'Could not load your profile.';
+        _loadError = AppLocalizations.of(context).tr('Could not load your profile.');
       });
     }
   }
@@ -145,7 +145,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   String _text(String english, String chinese) =>
-      Localizations.localeOf(context).languageCode == 'zh' ? chinese : english;
+      AppLocalizations.of(context).tr(english);
 
   String _date(Object? value) {
     if (value == null) return _text('Not available', '暂无');

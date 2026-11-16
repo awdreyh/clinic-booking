@@ -9,20 +9,37 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Tea Journal';
+  Map<String, String> get translations => const {};
 
   @override
-  String get navTea => 'Tea';
+  String get welcomeTitle => 'A little space for your wellbeing';
 
   @override
-  String get navTeaware => 'Teaware';
+  String get welcomeSubtitle => 'You can browse first and sign in when you’re ready to book.';
 
   @override
-  String get navLog => 'Log';
+  String get continueAsGuest => 'Continue as Guest';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
 
   @override
   String get navProfile => 'Profile';
-
   @override
   String get save => 'Save';
 
@@ -69,23 +86,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get welcomeUser => 'Welcome!';
 
-    @override
-    String get myBookings => 'My bookings';
+  @override
+  String get myBookings => 'My bookings';
 
-    @override
-    String get nextBooking => 'Next booking';
+  @override
+  String get nextBooking => 'Next booking';
 
-    @override
-    String get noUpcomingBookings => 'No upcoming bookings';
+  @override
+  String get noUpcomingBookings => 'No upcoming bookings';
 
-    @override
-    String get addBooking => 'Add booking';
+  @override
+  String get addBooking => 'Add booking';
 
-    @override
-    String get otherUpcomingBookings => 'Other upcoming bookings';
+  @override
+  String get otherUpcomingBookings => 'Other upcoming bookings';
 
-    @override
-    String get bookingLoadError => 'Could not load your bookings.';
+  @override
+  String get bookingLoadError => 'Could not load your bookings.';
 
   @override
   String get retry => 'Retry';

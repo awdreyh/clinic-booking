@@ -47,19 +47,19 @@ class _HomeShellState extends State<HomeShell> {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Account')),
+              appBar: AppBar(title: Text(AppLocalizations.of(context).tr('Account'))),
               body: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Could not load your account role.'),
+                    Text(AppLocalizations.of(context).tr('Could not load your account role.')),
                     TextButton(
                       onPressed: () => setState(() => _roleFuture = _fetchRole()),
-                      child: const Text('Retry'),
+                      child: Text(AppLocalizations.of(context).retry),
                     ),
                     TextButton(
                       onPressed: () => Supabase.instance.client.auth.signOut(),
-                      child: const Text('Sign out'),
+                      child: Text(AppLocalizations.of(context).signOut),
                     ),
                   ],
                 ),
@@ -91,15 +91,14 @@ class _HomeShellState extends State<HomeShell> {
                 const ProfilePage(role: 'customer'),
               ],
           };
-          final isChinese = Localizations.localeOf(context).languageCode == 'zh';
           final labels = switch (role) {
             'customer' => [
-                isChinese ? '首页' : 'Dashboard',
+                l10n.tr('Dashboard'),
                 l10n.myBookings,
                 l10n.navProfile,
               ],
-            'therapist' => ['Dashboard', l10n.navProfile],
-            _ => ['Dashboard', l10n.navProfile],
+            'therapist' => [l10n.tr('Dashboard'), l10n.navProfile],
+            _ => [l10n.tr('Dashboard'), l10n.navProfile],
           };
           final icons = switch (role) {
             'customer' => const [
@@ -116,7 +115,7 @@ class _HomeShellState extends State<HomeShell> {
             bottomNavigationBar: NavigationBar(
               selectedIndex: activeIndex,
               onDestinationSelected: (index) => setState(() => _index = index),
-              backgroundColor: AppColors.espresso,
+              backgroundColor: AppColors.primary,
               indicatorColor: AppColors.accent,
               destinations: [
                 for (var i = 0; i < labels.length; i++)

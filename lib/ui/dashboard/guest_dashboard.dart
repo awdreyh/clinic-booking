@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/model/service.dart';
 import '../../data/repository/service.dart';
+import '../../l10n/app_localizations.dart';
 import '../core/welcome_page.dart';
 import '../therapist/list.dart';
 import '../user/login.dart';
@@ -67,14 +68,14 @@ class _GuestDashboardState extends State<GuestDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9F5),
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
           _GuestHero(
-            isChinese: isChinese,
+            l10n: l10n,
             onBack: () => Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const WelcomePage()),
             ),
@@ -96,7 +97,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                   child: Column(
                     children: [
                       Text(
-                        isChinese ? '暂时无法加载服务。' : 'Could not load services.',
+                        l10n.tr('Could not load services.'),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
@@ -104,7 +105,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
                         onPressed: () => setState(
                           () => _catalogFuture = _loadCatalog(),
                         ),
-                        child: Text(isChinese ? '重试' : 'Retry'),
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),
@@ -112,13 +113,13 @@ class _GuestDashboardState extends State<GuestDashboard> {
               }
               return _ServicesSection(
                 catalog: snapshot.data!,
-                isChinese: isChinese,
+                l10n: l10n,
                 onBook: _openAuth,
               );
             },
           ),
-          EnsoPillars(isChinese: isChinese),
-          EnsoVisitUs(isChinese: isChinese),
+          EnsoPillars(l10n: l10n),
+          EnsoVisitUs(l10n: l10n),
         ],
       ),
     );
@@ -127,13 +128,13 @@ class _GuestDashboardState extends State<GuestDashboard> {
 
 class _GuestHero extends StatelessWidget {
   const _GuestHero({
-    required this.isChinese,
+    required this.l10n,
     required this.onBack,
     required this.onSignIn,
     required this.onBrowse,
   });
 
-  final bool isChinese;
+  final AppLocalizations l10n;
   final VoidCallback onBack;
   final VoidCallback onSignIn;
   final VoidCallback onBrowse;
@@ -164,7 +165,7 @@ class _GuestHero extends StatelessWidget {
                   Row(
                     children: [
                       IconButton(
-                        tooltip: isChinese ? '返回欢迎页' : 'Back to welcome',
+                        tooltip: l10n.tr('Back to welcome'),
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
                         onPressed: onBack,
                       ),
@@ -201,15 +202,12 @@ class _GuestHero extends StatelessWidget {
                               .displaySmall
                               ?.copyWith(
                                 color: Colors.white,
-                                fontFamily: 'serif',
                                 height: 1.1,
                               ),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          isChinese
-                              ? '融能量、自然、宁静与合一于一体的疗愈空间。'
-                              : 'A sanctuary of energy, nature, serenity and oneness.',
+                          l10n.tr('A sanctuary of energy, nature, serenity and oneness.'),
                           style: const TextStyle(
                             color: Color(0xFFE7EAE0),
                             fontSize: 14,
@@ -231,7 +229,7 @@ class _GuestHero extends StatelessWidget {
                             ),
                             icon: const Icon(Icons.login),
                             label: Text(
-                              isChinese ? '登录后预约' : 'Sign in to book',
+                              l10n.tr('Sign in to book'),
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
@@ -249,7 +247,7 @@ class _GuestHero extends StatelessWidget {
                             ),
                             icon: const Icon(Icons.people_outline, size: 18),
                             label: Text(
-                              isChinese ? '浏览治疗师' : 'Browse therapists',
+                              l10n.tr('Browse therapists'),
                             ),
                           ),
                         ),
@@ -269,12 +267,12 @@ class _GuestHero extends StatelessWidget {
 class _ServicesSection extends StatelessWidget {
   const _ServicesSection({
     required this.catalog,
-    required this.isChinese,
+    required this.l10n,
     required this.onBook,
   });
 
   final _ServiceCatalog catalog;
-  final bool isChinese;
+  final AppLocalizations l10n;
   final VoidCallback onBook;
 
   @override
@@ -288,7 +286,7 @@ class _ServicesSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '服务项目' : 'OUR SERVICES',
+            l10n.tr('OUR SERVICES'),
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -298,9 +296,8 @@ class _ServicesSection extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            isChinese ? '选择适合您的护理' : 'Treatments for every body',
+            l10n.tr('Treatments for every body'),
             style: const TextStyle(
-              fontFamily: 'serif',
               fontSize: 24,
               color: Color(0xFF30372B),
             ),
@@ -319,7 +316,7 @@ class _ServicesSection extends StatelessWidget {
             itemBuilder: (context, index) => _ServiceCard(
               service: catalog.services[index],
               startingPrice: catalog.startingPrices[catalog.services[index].id],
-              isChinese: isChinese,
+              l10n: l10n,
               onTap: onBook,
             ),
           ),
@@ -333,13 +330,13 @@ class _ServiceCard extends StatelessWidget {
   const _ServiceCard({
     required this.service,
     required this.startingPrice,
-    required this.isChinese,
+    required this.l10n,
     required this.onTap,
   });
 
   final Service service;
   final double? startingPrice;
-  final bool isChinese;
+  final AppLocalizations l10n;
   final VoidCallback onTap;
 
   @override
@@ -378,7 +375,6 @@ class _ServiceCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontFamily: 'serif',
                       fontSize: 15,
                       height: 1.15,
                       color: Color(0xFF30372B),
@@ -387,9 +383,9 @@ class _ServiceCard extends StatelessWidget {
                   if (startingPrice != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      isChinese
-                          ? '\$${startingPrice!.toStringAsFixed(0)} 起'
-                          : 'From \$${startingPrice!.toStringAsFixed(0)}',
+                      l10n.tr('From {price}', {
+                        'price': '\$${startingPrice!.toStringAsFixed(0)}',
+                      }),
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

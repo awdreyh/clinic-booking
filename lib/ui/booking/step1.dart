@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/category.dart';
 import '../../data/model/service.dart';
+import '../../l10n/app_localizations.dart';
 import 'booking_step_shared.dart';
 
 class BookingStep1 extends StatelessWidget {
@@ -72,7 +73,6 @@ class BookingStep1 extends StatelessWidget {
           style: TextStyle(
             fontSize: 30,
             height: 1.12,
-            fontFamily: 'serif',
             color: _ink,
           ),
         ),
@@ -108,7 +108,6 @@ class BookingStep1 extends StatelessWidget {
           Text(
             '${categories.firstWhere((category) => category.id == categoryId, orElse: () => categories.first).name} services',
             style: const TextStyle(
-              fontFamily: 'serif',
               fontSize: 22,
               color: _ink,
             ),
@@ -135,7 +134,7 @@ class BookingStep1 extends StatelessWidget {
             const SizedBox(height: 15),
             const Text(
               'A little more time',
-              style: TextStyle(fontFamily: 'serif', fontSize: 22, color: _ink),
+              style: TextStyle(fontSize: 22, color: _ink),
             ),
             const SizedBox(height: 5),
             const Text(
@@ -171,7 +170,6 @@ class BookingStep1 extends StatelessWidget {
                     Text(
                       'A little more than a treatment',
                       style: TextStyle(
-                        fontFamily: 'serif',
                         fontSize: 18,
                         color: _ink,
                       ),
@@ -240,7 +238,6 @@ class _CollectionCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontFamily: 'serif',
                     fontSize: 16,
                     height: 1.1,
                     color: Color(0xFF30372B),
@@ -554,3 +551,5 @@ class _ExtraTime extends StatelessWidget {
     ),
   );
 }
+
+

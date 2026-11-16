@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../data/model/timeslot.dart';
 import '../../data/repository/booking.dart';
 import '../../data/repository/timeslot.dart';
@@ -76,7 +77,9 @@ class _TimeslotScreenState extends State<TimeslotScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        SnackBar(content: Text(AppLocalizations.of(context).tr(
+          'Could not create booking: {error}', {'error': error},
+        ))),
       );
     }
   }
@@ -84,8 +87,9 @@ class _TimeslotScreenState extends State<TimeslotScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Timeslots')),
+      appBar: AppBar(title: Text(l10n.tr('Timeslots'))),
       body: Column(
         children: [
           CalendarDatePicker(
@@ -108,18 +112,18 @@ class _TimeslotScreenState extends State<TimeslotScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text('Could not load timeslots.'),
+                            Text(l10n.tr('Could not load timeslots.')),
                             const SizedBox(height: 8),
                             TextButton(
                               onPressed: _loadTimeslots,
-                              child: const Text('Retry'),
+                              child: Text(l10n.retry),
                             ),
                           ],
                         ),
                       )
                     : _slots.isEmpty
-                        ? const Center(
-                            child: Text('No available timeslots for this day.'),
+                        ?  Center(
+                            child: Text(l10n.tr('No available timeslots for this day.')),
                           )
                         : ListView.separated(
                             itemCount: _slots.length,
@@ -136,7 +140,7 @@ class _TimeslotScreenState extends State<TimeslotScreen> {
                                   style: TextStyle(color: foreground),
                                 ),
                                 subtitle: Text(
-                                  available ? 'Available' : 'Unavailable',
+                                  l10n.tr(available ? 'Available' : 'Unavailable'),
                                   style: TextStyle(color: foreground),
                                 ),
                                 enabled: available,

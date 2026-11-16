@@ -19,7 +19,6 @@ class CustomerHomePage extends StatelessWidget {
     final name = metadataName == null || metadataName.isEmpty
         ? user?.email?.split('@').first
         : metadataName;
-    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9F5),
@@ -28,12 +27,12 @@ class CustomerHomePage extends StatelessWidget {
         children: [
           _Hero(
             name: name,
-            isChinese: isChinese,
+            l10n: l10n,
             bookingsLabel: l10n.myBookings,
             onViewBookings: onViewBookings,
           ),
-          EnsoPillars(isChinese: isChinese),
-          EnsoVisitUs(isChinese: isChinese),
+          EnsoPillars(l10n: l10n),
+          EnsoVisitUs(l10n: l10n),
         ],
       ),
     );
@@ -43,13 +42,13 @@ class CustomerHomePage extends StatelessWidget {
 class _Hero extends StatelessWidget {
   const _Hero({
     required this.name,
-    required this.isChinese,
+    required this.l10n,
     required this.bookingsLabel,
     required this.onViewBookings,
   });
 
   final String? name;
-  final bool isChinese;
+  final AppLocalizations l10n;
   final String bookingsLabel;
   final VoidCallback onViewBookings;
 
@@ -103,15 +102,12 @@ class _Hero extends StatelessWidget {
                     'Massage. Beauty. Tea',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           color: Colors.white,
-                          fontFamily: 'serif',
                           height: 1.1,
                         ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    isChinese
-                        ? '融能量、自然、宁静与合一于一体的疗愈空间。'
-                        : 'A sanctuary of energy, nature, serenity and oneness.',
+                    l10n.tr('A sanctuary of energy, nature, serenity and oneness.'),
                     style: const TextStyle(
                       color: Color(0xFFE7EAE0),
                       fontSize: 14,
@@ -121,7 +117,7 @@ class _Hero extends StatelessWidget {
                   if (name != null) ...[
                     const SizedBox(height: 10),
                     Text(
-                      isChinese ? '欢迎回来，$name' : 'Welcome back, $name',
+                      l10n.tr('Welcome back, {name}', {'name': name}),
                       style: const TextStyle(
                         color: Color(0xFFB9C697),
                         fontSize: 13,
@@ -148,7 +144,7 @@ class _Hero extends StatelessWidget {
                       ),
                       icon: const Icon(Icons.spa_outlined),
                       label: Text(
-                        isChinese ? '立即预约' : 'Book now',
+                        l10n.tr('Book now'),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -179,34 +175,25 @@ class _Hero extends StatelessWidget {
 }
 
 class EnsoPillars extends StatelessWidget {
-  const EnsoPillars({super.key, required this.isChinese});
+  const EnsoPillars({super.key, required this.l10n});
 
-  final bool isChinese;
+  final AppLocalizations l10n;
 
   static const _pillars = [
     (
       icon: Icons.spa_outlined,
       title: 'Massage',
-      zhTitle: '中医推拿 · 芳香疗法 · 深层肌肉放松',
-      body:
-          'Rooted in Chinese Meridian Theory — both relaxation and true physical recovery.',
-      zhBody: '以「经络为本，气血为根」，专业手法舒缓肩颈、腰背与全身疲劳，调理亚健康，提升身体能量场。',
+      body: 'Rooted in Chinese Meridian Theory — both relaxation and true physical recovery.',
     ),
     (
       icon: Icons.face_retouching_natural,
       title: 'Beauty',
-      zhTitle: '面部经络护理 · 草本养肤 · 美疗放松仪式',
-      body:
-          'Beauty flows naturally from balance — our treatments help your face reflect your inner harmony.',
-      zhBody: '结合东方护肤智慧与草本护理，焕发皮肤原生光泽，改善肤色、肤质与轮廓松弛。',
+      body: 'Beauty flows naturally from balance — our treatments help your face reflect your inner harmony.',
     ),
     (
       icon: Icons.emoji_food_beverage_outlined,
       title: 'Tea',
-      zhTitle: '茶艺体验 · 静心品茗 · 文化沙龙',
-      body:
-          'A bridge between people, cultures and a peaceful state of mind.',
-      zhBody: '我们用一盏茶，把你带入慢生活的节奏，在香气中释放情绪，在热气中疗愈自己。',
+      body: 'A bridge between people, cultures and a peaceful state of mind.',
     ),
   ];
 
@@ -218,7 +205,7 @@ class EnsoPillars extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '关于我们' : 'ABOUT US',
+            l10n.tr('ABOUT US'),
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -228,9 +215,8 @@ class EnsoPillars extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            isChinese ? '三种方式，安放身心' : 'Three ways to unwind',
+            l10n.tr('Three ways to unwind'),
             style: const TextStyle(
-              fontFamily: 'serif',
               fontSize: 24,
               color: Color(0xFF30372B),
             ),
@@ -263,25 +249,16 @@ class EnsoPillars extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          pillar.title,
+                          l10n.tr(pillar.title),
                           style: const TextStyle(
-                            fontFamily: 'serif',
                             fontSize: 18,
                             color: Color(0xFF30372B),
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          pillar.zhTitle,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            letterSpacing: .4,
-                            color: Color(0xFF4A5D3E),
-                          ),
-                        ),
                         const SizedBox(height: 6),
                         Text(
-                          isChinese ? pillar.zhBody : pillar.body,
+                          l10n.tr(pillar.body),
                           style: const TextStyle(
                             fontSize: 12,
                             height: 1.55,
@@ -301,9 +278,9 @@ class EnsoPillars extends StatelessWidget {
 }
 
 class EnsoVisitUs extends StatelessWidget {
-  const EnsoVisitUs({super.key, required this.isChinese});
+  const EnsoVisitUs({super.key, required this.l10n});
 
-  final bool isChinese;
+  final AppLocalizations l10n;
 
   Future<void> _open(String uri) async {
     await launchUrl(Uri.parse(uri));
@@ -322,7 +299,7 @@ class EnsoVisitUs extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isChinese ? '到店信息' : 'VISIT US',
+            l10n.tr('VISIT US'),
             style: const TextStyle(
               color: Color(0xFFB9C697),
               fontSize: 11,
@@ -342,19 +319,19 @@ class EnsoVisitUs extends StatelessWidget {
           _ContactRow(
             icon: Icons.phone_outlined,
             title: '022 185 8228',
-            subtitle: isChinese ? '中文 / English 均可' : 'English / 中文',
+            subtitle: l10n.tr('English / 中文'),
             onTap: () => _open('tel:0221858228'),
           ),
           _ContactRow(
             icon: Icons.mail_outline,
             title: 'info@ensospace.co.nz',
-            subtitle: isChinese ? '欢迎来信咨询' : 'Send us a message',
+            subtitle: l10n.tr('Send us a message'),
             onTap: () => _open('mailto:info@ensospace.co.nz'),
           ),
           _ContactRow(
             icon: Icons.schedule_outlined,
-            title: isChinese ? '每日营业' : 'Open every day',
-            subtitle: isChinese ? '上午 9:00 – 晚上 9:00' : '9:00 am – 9:00 pm',
+            title: l10n.tr('Open every day'),
+            subtitle: l10n.tr('9:00 am – 9:00 pm'),
           ),
         ],
       ),

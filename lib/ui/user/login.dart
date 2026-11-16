@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../l10n/app_localizations.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, this.initialSignUp = false});
@@ -25,26 +26,28 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final isSignUp = _isSignUp;
 
     if (email.isEmpty || password.isEmpty) {
-      _showSnackBar('Please enter email and password.');
+      _showSnackBar(l10n.tr('Please enter email and password.'));
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      if (_isSignUp) {
+      if (isSignUp) {
         final response = await supabase.auth.signUp(
           email: email,
           password: password,
         );
         _showSnackBar(
           response.session != null
-              ? 'Account created successfully.'
-              : 'Account created. Check your inbox for a confirmation link.',
+              ? l10n.tr('Account created successfully.')
+              : l10n.tr('Account created. Check your inbox for a confirmation link.'),
         );
       } else {
         await supabase.auth.signInWithPassword(
@@ -54,9 +57,12 @@ class _AuthScreenState extends State<AuthScreen> {
         // AuthGate reacts to the new session and returns to the dashboard.
       }
     } on AuthException catch (error) {
+      debugPrint('${isSignUp ? 'Sign-up' : 'Login'} failed: ${error.message}');
       _showSnackBar(error.message);
-    } catch (error) {
-      _showSnackBar('An unexpected error occurred.');
+    } catch (error, stackTrace) {
+      debugPrint('${isSignUp ? 'Sign-up' : 'Login'} failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      _showSnackBar(l10n.tr('An unexpected error occurred.'));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -79,8 +85,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(_isSignUp ? 'Sign Up' : 'Sign In')),
+      appBar: AppBar(title: Text(_isSignUp ? l10n.signUp : l10n.signIn)),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -88,13 +95,13 @@ class _AuthScreenState extends State<AuthScreen> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration:  InputDecoration(labelText: l10n.email),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: InputDecoration(labelText: l10n.password),
               obscureText: true,
             ),
             const SizedBox(height: 20),
@@ -102,7 +109,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
                     onPressed: _submit,
-                    child: Text(_isSignUp ? 'Sign Up' : 'Sign In'),
+                    child: Text(_isSignUp ? l10n.signUp : l10n.signIn),
                   ),
             TextButton(
               onPressed: () {
@@ -110,8 +117,8 @@ class _AuthScreenState extends State<AuthScreen> {
               },
               child: Text(
                 _isSignUp
-                    ? 'Already have an account? Sign In'
-                    : "Don't have an account? Sign Up",
+                    ? l10n.tr('Already have an account? Sign In')
+                    : l10n.tr("Don't have an account? Sign Up"),
               ),
             ),
           ],

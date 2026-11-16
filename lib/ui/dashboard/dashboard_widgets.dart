@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/model/booking.dart';
+import '../../l10n/app_localizations.dart';
 
 class DashboardScaffold extends StatelessWidget {
   const DashboardScaffold({required this.title, required this.child, super.key});
@@ -14,7 +15,7 @@ class DashboardScaffold extends StatelessWidget {
           title: Text(title),
           actions: [
             IconButton(
-              tooltip: 'Sign out',
+              tooltip: AppLocalizations.of(context).signOut,
               icon: const Icon(Icons.logout),
               onPressed: () => Supabase.instance.client.auth.signOut(),
             ),
@@ -33,7 +34,8 @@ class BookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = booking.bookingDate ?? 'Date unavailable';
+    final l10n = AppLocalizations.of(context);
+    final date = booking.bookingDate ?? l10n.tr('Date unavailable');
     final time = '${booking.startTime ?? '--:--'} – ${booking.endTime ?? '--:--'}';
     return Card(
       child: Padding(
@@ -44,16 +46,19 @@ class BookingCard extends StatelessWidget {
               leading: const Icon(Icons.event_note_outlined),
               title: Text('$date · $time'),
               subtitle: Text(
-                'Customer ${booking.customerId ?? '-'} · ${booking.status}',
+                l10n.tr('Customer {customer} · {status}', {
+                  'customer': booking.customerId ?? '-',
+                  'status': l10n.tr(booking.status),
+                }),
               ),
             ),
             if (onAccept != null || onCancel != null)
               ButtonBar(
                 children: [
                   if (onCancel != null)
-                    TextButton(onPressed: onCancel, child: const Text('Cancel')),
+                    TextButton(onPressed: onCancel, child: Text(l10n.cancel)),
                   if (onAccept != null)
-                    FilledButton(onPressed: onAccept, child: const Text('Confirm')),
+                    FilledButton(onPressed: onAccept, child: Text(l10n.confirm)),
                 ],
               ),
           ],
@@ -100,7 +105,9 @@ class DashboardLoadError extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text('Could not load dashboard: $error'),
+          child: Text(AppLocalizations.of(context).tr(
+            'Could not load dashboard: {error}', {'error': error},
+          )),
         ),
       );
 }

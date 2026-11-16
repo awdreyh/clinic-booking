@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/model/booking.dart';
 import '../../data/repository/booking.dart';
+import '../../l10n/app_localizations.dart';
 import 'dashboard_widgets.dart';
 
 class TherapistDashboard extends StatefulWidget {
@@ -36,15 +37,19 @@ class _TherapistDashboardState extends State<TherapistDashboard> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not update booking: $error')),
+          SnackBar(content: Text(AppLocalizations.of(context).tr(
+            'Could not update booking: {error}', {'error': error},
+          ))),
         );
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) => DashboardScaffold(
-        title: 'Therapist dashboard',
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return DashboardScaffold(
+        title: l10n.tr('Therapist dashboard'),
         child: FutureBuilder<List<Booking>>(
           future: _future,
           builder: (context, snapshot) {
@@ -63,15 +68,15 @@ class _TherapistDashboardState extends State<TherapistDashboard> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   StatCard(
-                    label: 'Pending requests',
+                    label: l10n.tr('Pending requests'),
                     value: '$pending',
                     icon: Icons.pending_actions,
                   ),
                   const SizedBox(height: 20),
-                  Text('Bookings', style: Theme.of(context).textTheme.titleLarge),
+                  Text(l10n.tr('Bookings'), style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 8),
                   if (bookings.isEmpty)
-                    const ListTile(title: Text('No bookings yet.')),
+                    ListTile(title: Text(l10n.tr('No bookings yet.'))),
                   for (final booking in bookings)
                     BookingCard(
                       booking: booking,
@@ -88,4 +93,5 @@ class _TherapistDashboardState extends State<TherapistDashboard> {
           },
         ),
       );
+  }
 }

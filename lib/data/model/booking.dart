@@ -39,9 +39,26 @@ class Booking {
         duration: json['duration'] as String?,
         price: (json['price'] as num?)?.toDouble(),
         notes: json['notes'] as String?,
-        createdAt: _dateTime(json['created_at']),
+            createdAt: json['created_at'] == null
+            ? null
+            : DateTime.parse(json['created_at'].toString()),
+   
+
       );
 
-  static DateTime? _dateTime(Object? value) =>
-      value == null ? null : DateTime.parse(value.toString());
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'customer_id': customerId,
+        'booking_date': bookingDate,
+        'start_time': startTime,
+        'end_time': endTime,
+        'status': status,
+        'therapist_id': therapistId,
+        'service_id': serviceId,
+        'duration': duration,
+        'price': price,
+        'notes': notes,
+        'created_at': createdAt?.toIso8601String(),
+      };
 }
+

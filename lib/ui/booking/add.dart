@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
 import '../../data/model/category.dart';
@@ -10,6 +10,7 @@ import '../../data/repository/category.dart';
 import '../../data/repository/service.dart';
 import '../../data/repository/therapist.dart';
 import '../../data/repository/timeslot.dart';
+import '../../l10n/app_localizations.dart';
 import 'booking_step_shared.dart';
 import 'step1.dart';
 import 'step2.dart';
@@ -387,10 +388,11 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   }
 
   Future<void> _confirmAndPay() async {
+    final l10n = AppLocalizations.of(context);
     final customerId = Supabase.instance.client.auth.currentUser?.id;
     if (customerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign in to request a booking.')),
+        SnackBar(content: Text(l10n.tr('Sign in to request a booking.'))),
       );
       return;
     }
@@ -404,8 +406,8 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       if (!mounted) return;
       if (bookingTherapist == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('That time was just taken. Please pick another.'),
+          SnackBar(
+            content: Text(l10n.tr('That time was just taken. Please pick another.')),
           ),
         );
         return;
@@ -444,12 +446,13 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
 
   @override
   Widget build(BuildContext context) {
-    const titles = [
-      'Choose a service',
-      'Choose a therapist',
-      'Choose a time',
-      'Booking summary',
-      'Confirm & pay',
+      final l10n = AppLocalizations.of(context);
+      final titles = [
+      l10n.tr('Choose a service'),
+      l10n.tr('Choose a therapist'),
+      l10n.tr('Choose a time'),
+      l10n.tr('Booking summary'),
+      l10n.tr('Confirm & pay'),
     ];
     return Scaffold(
       appBar: AppBar(
@@ -808,7 +811,7 @@ class _PaymentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Payment')),
+    appBar: AppBar(title: Text(AppLocalizations.of(context).tr('Payment'))),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -874,7 +877,7 @@ class _ProgressHeader extends StatelessWidget {
                     children: [
                       Text(
                         [
-                          step == 1 ? '✓  Service' : '01  Service',
+                          step == 1 ? 'âœ“  Service' : '01  Service',
                           '02  Therapist',
                           '03  Date & time',
                         ][i],
@@ -955,3 +958,4 @@ class _ErrorPanel extends StatelessWidget {
     ),
   );
 }
+

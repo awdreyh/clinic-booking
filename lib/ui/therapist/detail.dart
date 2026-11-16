@@ -4,6 +4,7 @@ import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
 import '../../data/model/user.dart';
 import '../../data/repository/timeslot.dart';
+import '../../l10n/app_localizations.dart';
 import '../booking/confirm.dart';
 
 class TherapistDetailPage extends StatefulWidget {
@@ -87,6 +88,7 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
     final therapist = widget.therapist;
     final colors = Theme.of(context).colorScheme;
     final localizations = MaterialLocalizations.of(context);
+    final l10n = AppLocalizations.of(context);
     Service? selectedService;
     for (final service in widget.services) {
       if (service.id == _selectedServiceId) selectedService = service;
@@ -135,18 +137,18 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
                       icon: Icons.location_on_outlined,
                       text: therapist.address!),
                 const SizedBox(height: 24),
-                Text('Services', style: Theme.of(context).textTheme.titleLarge),
+                Text(l10n.tr('Services'), style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 if (widget.services.isEmpty)
-                  const Text('No services listed yet.')
+                  Text(l10n.tr('No services listed yet.'))
                 else ...[
                   DropdownButtonFormField<int?>(
                     initialValue: _selectedServiceId,
-                    decoration: const InputDecoration(labelText: 'Service'),
+                    decoration: InputDecoration(labelText: l10n.tr('Service')),
                     items: [
-                      const DropdownMenuItem<int?>(
+                       DropdownMenuItem<int?>(
                         value: null,
-                        child: Text('Choose a service (optional)'),
+                        child: Text(l10n.tr('Choose a service (optional)')),
                       ),
                       for (final service in widget.services)
                         DropdownMenuItem<int?>(
@@ -173,7 +175,7 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
                     ),
                 ],
                 const SizedBox(height: 24),
-                Text('Availability',
+                Text(l10n.tr('Availability'),
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 CalendarDatePicker(
@@ -199,15 +201,15 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
                   Center(
                     child: Column(
                       children: [
-                        const Text('Could not load availability.'),
-                        TextButton(onPressed: _loadSlots, child: const Text('Retry')),
+                        Text(l10n.tr('Could not load availability.')),
+                        TextButton(onPressed: _loadSlots, child: Text(l10n.retry)),
                       ],
                     ),
                   )
                 else if (_slots.isEmpty)
-                  const Padding(
+                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: Text('No available times for this day.')),
+                    child: Center(child: Text(l10n.tr('No available times for this day.'))),
                   )
                 else
                   for (final slot in _slots)
@@ -216,7 +218,7 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
                       child: ListTile(
                         leading: const Icon(Icons.schedule_outlined),
                         title: Text('${slot.startTime} – ${slot.endTime}'),
-                        subtitle: const Text('Available'),
+                        subtitle: Text(l10n.tr('Available')),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: slot.isAvailable ? () => _openBooking(slot) : null,
                       ),

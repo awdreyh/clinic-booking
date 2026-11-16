@@ -77,8 +77,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
       bookings.add(
         _UpcomingBooking(
-          therapistName:
-              therapistNames[row['therapist_id']?.toString()] ?? 'Therapist',
+          therapistName: therapistNames[row['therapist_id']?.toString()],
           serviceName: serviceNames[(row['service_id'] as num?)?.toInt()],
           startAt: startAt,
           endAt: DateTime.parse('${date}T$endTime'),
@@ -236,7 +235,7 @@ class _UpcomingBooking {
     required this.endAt,
   });
 
-  final String therapistName;
+  final String? therapistName;
   final String? serviceName;
   final DateTime startAt;
   final DateTime endAt;
@@ -256,6 +255,7 @@ class _NextBookingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Card(
       margin: EdgeInsets.zero,
       color: colors.primaryContainer,
@@ -272,7 +272,7 @@ class _NextBookingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    booking.therapistName,
+                    booking.therapistName ?? l10n.tr('Therapist'),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: colors.onPrimaryContainer,
                           fontWeight: FontWeight.w700,
@@ -305,10 +305,11 @@ class _BookingListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.calendar_month_outlined),
-      title: Text(booking.therapistName),
+      title: Text(booking.therapistName ?? l10n.tr('Therapist')),
       subtitle: Text('$dateLabel · $timeLabel'),
       trailing: const Icon(Icons.chevron_right),
     );

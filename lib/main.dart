@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
             navigatorKey: _navigatorKey,
             title: 'Clinic Booking',
             theme: ThemeData(
+              fontFamily: 'serif',
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFB9C697)),
               scaffoldBackgroundColor: const Color(0xFFF8F9F5),
             ),

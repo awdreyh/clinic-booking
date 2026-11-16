@@ -61,4 +61,24 @@ class User {
 
   static DateTime? _dateTime(Object? value) =>
       value == null ? null : DateTime.parse(value.toString());
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'description': description,
+        'is_active': isActive,
+        'is_member': isMember,
+        'last_login': lastLogin?.toIso8601String(),
+        'updated_at': updatedAt?.toIso8601String(),
+        'member_since': memberSince?.toIso8601String(),
+        'membership_expires': membershipExpires?.toIso8601String(),
+        'profile_picture': profilePicture,
+        'photo': photo,
+        'meta': meta,
+        'address': address,
+        'role': role,
+        'created_at': createdAt?.toIso8601String(),
+      };
 }

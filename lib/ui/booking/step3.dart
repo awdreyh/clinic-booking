@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
+import '../../l10n/app_localizations.dart';
 import 'booking_step_shared.dart';
 
 class BookingStep3 extends StatelessWidget {
@@ -29,7 +30,9 @@ class BookingStep3 extends StatelessWidget {
   final ValueChanged<Timeslot> onSlotSelected;
 
   @override
-  Widget build(BuildContext context) => ListView(
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ListView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
         children: [
           BookingServiceSummary(
@@ -50,13 +53,13 @@ class BookingStep3 extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Text(
-              'Available times',
+              l10n.tr('Available times'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
           if (slots.isEmpty)
-            const BookingEmptyState(
-              message: 'No available times on this date. Choose another day.',
+            BookingEmptyState(
+              message: l10n.tr('No available times on this date. Choose another day.'),
             ),
           Wrap(
             spacing: 8,
@@ -72,4 +75,5 @@ class BookingStep3 extends StatelessWidget {
           ),
         ],
       );
+}
 }

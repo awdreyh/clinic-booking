@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/model/service.dart';
 import '../../data/model/user.dart';
 import '../../data/repository/therapist.dart';
+import '../../l10n/app_localizations.dart';
 import 'detail.dart';
 
 class TherapistListPage extends StatefulWidget {
@@ -46,8 +47,10 @@ class _TherapistListPageState extends State<TherapistListPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Therapists')),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+        appBar: AppBar(title: Text(l10n.tr('Therapists'))),
         body: FutureBuilder<_TherapistDirectory>(
           future: _directory,
           builder: (context, snapshot) {
@@ -59,9 +62,9 @@ class _TherapistListPageState extends State<TherapistListPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Could not load therapists.'),
+                    Text(l10n.tr('Could not load therapists.')),
                     const SizedBox(height: 8),
-                    TextButton(onPressed: _refresh, child: const Text('Retry')),
+                    TextButton(onPressed: _refresh, child: Text(l10n.retry)),
                   ],
                 ),
               );
@@ -70,7 +73,7 @@ class _TherapistListPageState extends State<TherapistListPage> {
                 const _TherapistDirectory([], <String, List<Service>>{});
             final therapists = directory.users;
             if (therapists.isEmpty) {
-              return const Center(child: Text('No therapists available yet.'));
+              return Center(child: Text(l10n.tr('No therapists available yet.')));
             }
             return RefreshIndicator(
               onRefresh: _refresh,
@@ -143,6 +146,7 @@ class _TherapistListPageState extends State<TherapistListPage> {
           },
         ),
       );
+  }
 }
 
 class _TherapistDirectory {

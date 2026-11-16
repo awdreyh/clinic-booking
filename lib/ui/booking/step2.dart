@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/service.dart';
 import '../../data/model/user.dart';
+import '../../l10n/app_localizations.dart';
 import 'booking_step_shared.dart';
 
 class BookingStep2 extends StatelessWidget {
@@ -37,11 +38,13 @@ class BookingStep2 extends StatelessWidget {
   static const _muted = Color(0xFF797A6F);
 
   @override
-  Widget build(BuildContext context) => ListView(
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ListView(
     padding: const EdgeInsets.fromLTRB(20, 8, 20, 26),
     children: [
-      const Text(
-        'IN CARING HANDS',
+      Text(
+        l10n.tr('IN CARING HANDS'),
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
@@ -50,18 +53,17 @@ class BookingStep2 extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 5),
-      const Text(
-        'Find your therapist',
+      Text(
+        l10n.tr('Find your therapist'),
         style: TextStyle(
           fontSize: 30,
           height: 1.12,
-          fontFamily: 'serif',
           color: _ink,
         ),
       ),
       const SizedBox(height: 6),
-      const Text(
-        'Expert care, with a personal connection.',
+      Text(
+        l10n.tr('Expert care, with a personal connection.'),
         style: TextStyle(fontSize: 13, color: _muted),
       ),
       const SizedBox(height: 20),
@@ -76,10 +78,10 @@ class BookingStep2 extends StatelessWidget {
       Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Our specialists',
-              style: TextStyle(fontFamily: 'serif', fontSize: 22, color: _ink),
+              l10n.tr('Our specialists'),
+              style: TextStyle(fontSize: 22, color: _ink),
             ),
           ),
           Text(
@@ -90,8 +92,8 @@ class BookingStep2 extends StatelessWidget {
       ),
       const SizedBox(height: 10),
       if (therapists.isEmpty)
-        const BookingEmptyState(
-          message: 'No therapists currently provide this service.',
+        BookingEmptyState(
+          message: l10n.tr('No therapists currently provide this service.'),
         )
       else
         for (final therapist in therapists)
@@ -103,7 +105,7 @@ class BookingStep2 extends StatelessWidget {
           ),
       _NoPreferenceCard(selected: anyTherapist, onTap: onAnySelected),
       const SizedBox(height: 8),
-      const Row(
+      Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
@@ -112,7 +114,7 @@ class BookingStep2 extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              'Every therapist is carefully chosen to help you feel your best.',
+              l10n.tr('Every therapist is carefully chosen to help you feel your best.'),
               style: TextStyle(fontSize: 11, height: 1.5, color: _muted),
             ),
           ),
@@ -120,6 +122,7 @@ class BookingStep2 extends StatelessWidget {
       ),
     ],
   );
+}
 }
 
 class _NoPreferenceCard extends StatelessWidget {
@@ -160,12 +163,12 @@ class _NoPreferenceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 11),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'No preference',
+                    AppLocalizations.of(context).tr('No preference'),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -273,7 +276,6 @@ class _TherapistCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontFamily: 'serif',
                             fontSize: 21,
                             height: 1.1,
                             color: Color(0xFF30372B),
@@ -294,7 +296,7 @@ class _TherapistCard extends StatelessWidget {
                         if (services.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
-                            'Services · ${services.map((service) => service.name).join(' · ')}',
+                            'Services Â· ${services.map((service) => service.name).join(' Â· ')}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -371,3 +373,6 @@ class _TherapistPlaceholder extends StatelessWidget {
     child: const Icon(Icons.person_outline, size: 30, color: Color(0xFF68745E)),
   );
 }
+
+
+

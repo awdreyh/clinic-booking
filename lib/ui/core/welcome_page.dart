@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../dashboard/guest_dashboard.dart';
 import '../user/login.dart';
+import 'app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
-
-  static const _primary = Color(0xFFB9C697);
-  static const _ink = Color(0xFF34402E);
 
   void _continueAsGuest(BuildContext context) {
     Navigator.of(context).pushReplacement(
@@ -23,6 +22,7 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -44,25 +44,21 @@ class WelcomePage extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight - 52),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Container(
                     width: double.infinity,
-                    constraints: const BoxConstraints(maxWidth: 460),
-                    decoration: BoxDecoration(
-                      color: _primary.withValues(alpha: 0.22),
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    clipBehavior: Clip.antiAlias,
+                    constraints: const BoxConstraints(maxWidth: 260), 
                     child: Image.asset(
                       'assets/enso-logo.png',
                       fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(height: 34),
-                  const Text(
-                    'A little space for your wellbeing',
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 34),                  
+                    Text(
+                
+                    l10n.welcomeTitle,
+                    textAlign: TextAlign.start,
                     style: TextStyle(
                     color: Colors.white,
                       fontSize: 28,
@@ -72,8 +68,8 @@ class WelcomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Discover caring therapists and find a time that works for you.',
+                   Text(
+                    l10n.welcomeSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                     color: Color(0xFFF0E9E1),
@@ -88,13 +84,13 @@ class WelcomePage extends StatelessWidget {
                     child: FilledButton(
                       onPressed: () => _continueAsGuest(context),
                       style: FilledButton.styleFrom(
-                        backgroundColor: _primary,
-                        foregroundColor: _ink,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.ink,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text('Continue as a guest',
+                      child:  Text(l10n.continueAsGuest,
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -106,18 +102,18 @@ class WelcomePage extends StatelessWidget {
                       onPressed: () => _signIn(context),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color.fromARGB(255, 235, 238, 234),
-                        side: const BorderSide(color: _primary, width: 1.5),
+                        side: const BorderSide(color: AppColors.primary, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text('Sign in',
+                      child:  Text(l10n.signIn,
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'You can browse first and sign in when you’re ready to book.',
+                   Text(
+                    l10n.welcomeSubtitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Color(0xFFE2D9CE), fontSize: 12),
                   ),

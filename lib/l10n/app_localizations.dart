@@ -67,6 +67,16 @@ abstract class AppLocalizations {
 
   final String localeName;
 
+  Map<String, String> get translations;
+
+  String tr(String english, [Map<String, Object?> values = const {}]) {
+    var result = translations[english] ?? english;
+    for (final entry in values.entries) {
+      result = result.replaceAll('{${entry.key}}', '${entry.value}');
+    }
+    return result;
+  }
+
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
@@ -98,35 +108,24 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
-  /// No description provided for @appTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tea Journal'**
-  String get appTitle;
+  // Welcome Page
+  String get welcomeTitle;
+  String get welcomeSubtitle;
+  String get continueAsGuest;
+  String get signIn;
+  String get signUp;
+  String get forgotPassword;
+  String get email;
+  String get password;
+  String get confirmPassword;
 
-  /// No description provided for @navTea.
-  ///
-  /// In en, this message translates to:
-  /// **'Tea'**
-  String get navTea;
-
-  /// No description provided for @navTeaware.
-  ///
-  /// In en, this message translates to:
-  /// **'Teaware'**
-  String get navTeaware;
-
-  /// No description provided for @navLog.
-  ///
-  /// In en, this message translates to:
-  /// **'Log'**
-  String get navLog;
-
-  /// No description provided for @navProfile.
+  /// No description provided for @save.
   ///
   /// In en, this message translates to:
   /// **'Profile'**
   String get navProfile;
+  
+ 
 
   /// No description provided for @save.
   ///

@@ -5,6 +5,7 @@ import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
 import '../../data/model/user.dart';
 import '../../data/repository/booking.dart';
+import '../../l10n/app_localizations.dart';
 
 class BookingConfirmPage extends StatefulWidget {
   const BookingConfirmPage({
@@ -27,11 +28,12 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   bool _saving = false;
 
   Future<void> _confirm() async {
+    final l10n = AppLocalizations.of(context);
     final customerId = Supabase.instance.client.auth.currentUser?.id;
     if (_saving) return;
     if (customerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign in to request a booking.')),
+        SnackBar(content: Text(l10n.tr('Sign in to request a booking.'))),
       );
       return;
     }
@@ -47,13 +49,13 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking request sent.')),
+        SnackBar(content: Text(l10n.tr('Booking request sent.'))),
       );
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not create booking: $error')),
+        SnackBar(content: Text(l10n.tr('Could not create booking: {error}', {'error': error}))),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -63,6 +65,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   @override
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
+    final l10n = AppLocalizations.of(context);
     final start = DateTime.parse(
       '${widget.timeslot.date}T${widget.timeslot.startTime}',
     );
@@ -74,7 +77,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
         );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirm booking')),
+      appBar: AppBar(title: Text(l10n.tr('Confirm booking'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -105,7 +108,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Confirm booking'),
+                : Text(l10n.tr('Confirm booking')),
           ),
         ],
       ),

@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// -----------------------------------------------------------------------
-/// APP THEME — "Table" (inspired by the warm, editorial food/restaurant UI)
-/// -----------------------------------------------------------------------
-/// Palette:
-///  - Deep espresso brown for headers/footers & primary text
-///  - Warm cream/off-white for main backgrounds
-///  - Burnt orange as the single accent color
-///  - Serif italic display font for headlines, clean sans for body/UI
-/// -----------------------------------------------------------------------
+
 
 class AppColors {
   AppColors._();
 
   // Core palette
-  static const Color espresso = Color(
-    0xFF241812,
-  ); // near-black brown (hero/footer bg)
-  static const Color espressoLight = Color(
-    0xFF3A2A21,
-  ); // secondary dark surface
+
+
+  static const Color primary = Color(0xFFB9C697);
+  static const Color ink = Color(0xFF34402E);
   static const Color cream = Color(0xFFFAF7F2); // main app background
   static const Color creamAlt = Color(0xFFF3ECE0); // secondary panel bg
   static const Color cardBg = Color(0xFFFDFCF8);
@@ -56,13 +45,14 @@ class AppTheme {
   static const double buttonRadius = 4;
   static final BorderRadius globalRadius = BorderRadius.circular(buttonRadius);
 
-  // Serif italic display face — used for hero headlines & section titles
+  // Shared serif typeface for display and body text.
   static TextStyle _display(
     double size,
     FontWeight weight,
     Color color, {
     bool italic = false,
-  }) => GoogleFonts.inter(
+  }) => TextStyle(
+    fontFamily: 'serif',
     fontSize: size,
     fontWeight: weight,
     fontStyle: italic ? FontStyle.italic : FontStyle.normal,
@@ -70,13 +60,14 @@ class AppTheme {
     height: 1.15,
   );
 
-  // Clean sans — body copy, labels, buttons
+  // Body copy, labels, and buttons use the same shared typeface.
   static TextStyle _body(
     double size,
     FontWeight weight,
     Color color, {
     double? letterSpacing,
-  }) => GoogleFonts.inter(
+  }) => TextStyle(
+    fontFamily: 'serif',
     fontSize: size,
     fontWeight: weight,
     color: color,
@@ -88,7 +79,7 @@ class AppTheme {
     final base = ThemeData.light(useMaterial3: true);
 
     final textTheme = base.textTheme.copyWith(
-      // Hero / big italic headline e.g. "Eat with intention."
+
       displayLarge: _display(
         44,
         FontWeight.w600,
@@ -104,7 +95,7 @@ class AppTheme {
         AppColors.textPrimary,
         italic: true,
       ),
-      // Card titles e.g. "Seared Duck Confit"
+
       titleLarge: _body(18, FontWeight.w700, AppColors.textPrimary),
       titleMedium: _body(15, FontWeight.w600, AppColors.textPrimary),
       titleSmall: _body(14, FontWeight.w500, AppColors.textPrimary),
@@ -136,11 +127,11 @@ class AppTheme {
     return base.copyWith(
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.cream,
-      primaryColor: AppColors.espressoLight,
+      primaryColor: AppColors.primary,
       colorScheme: base.colorScheme.copyWith(
-        primary: AppColors.textSecondary,
+        primary: AppColors.primary,
         onPrimary: Colors.white,
-        secondary: AppColors.espresso,
+        secondary: AppColors.ink,
         onSecondary: AppColors.textOnDark,
         surface: AppColors.cardBg,
         onSurface: AppColors.textPrimary,
@@ -233,7 +224,7 @@ class AppTheme {
       ),
 
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.espressoLight,
+        backgroundColor: AppColors.primary,
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white,
         type: BottomNavigationBarType.fixed,        
@@ -245,7 +236,7 @@ class AppTheme {
 
       ),
 
-      // ---- Cards: dish/restaurant cards, soft shadow, rounded ----
+
       cardTheme: CardThemeData(
         color: AppColors.cardBg,
         elevation: 2,
@@ -267,7 +258,7 @@ class AppTheme {
       // ---- Chips: filter pills ("All", "Italian", "Japanese"...) ----
       chipTheme: ChipThemeData(        
         backgroundColor: AppColors.chipBg,
-        selectedColor: AppColors.espresso,
+        selectedColor: AppColors.primary,
         disabledColor: AppColors.chipBg,
         labelStyle: _body(11, FontWeight.w500, AppColors.textPrimary,),
         secondaryLabelStyle: _body(12.5, FontWeight.w500, AppColors.textOnDark),
@@ -329,7 +320,7 @@ class AppTheme {
   }
 }
 
-/// Reusable rating-star row (used across dish/restaurant cards).
+
 class RatingStars extends StatelessWidget {
   const RatingStars({
     super.key,
@@ -377,12 +368,13 @@ class TagBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color ?? (dark ? AppColors.espresso : AppColors.chipBg),
+        color: color ?? (dark ? AppColors.primary : AppColors.chipBg),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         label.toUpperCase(),
-        style: GoogleFonts.inter(
+        style: TextStyle(
+          fontFamily: 'serif',
           fontSize: 10,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.8,

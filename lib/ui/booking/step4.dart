@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
 import '../../data/model/user.dart';
+import '../../l10n/app_localizations.dart';
 import 'booking_step_shared.dart';
 
 class BookingStep4 extends StatelessWidget {
@@ -26,52 +27,56 @@ class BookingStep4 extends StatelessWidget {
   final double? totalPrice;
 
   @override
-  Widget build(BuildContext context) => ListView(
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ListView(
     padding: const EdgeInsets.all(20),
     children: [
       Text(
-        'Review your appointment',
+        l10n.tr('Review your appointment'),
         style: Theme.of(context).textTheme.titleLarge,
       ),
       const SizedBox(height: 12),
       BookingSummaryTile(
         icon: Icons.spa_outlined,
-        label: 'Service',
+        label: l10n.tr('Service'),
         value: service.name,
       ),
       if (priceOption != null)
         BookingSummaryTile(
           icon: Icons.timelapse,
-          label: 'Duration',
+          label: l10n.tr('Duration'),
           value: priceOption!.label,
         ),
       if (extraTime != null)
         BookingSummaryTile(
           icon: Icons.more_time,
-          label: 'Extra time',
-          value: '+${extraTime!.duration} min · ${extraTime!.priceLabel}',
+          label: l10n.tr('Extra time'),
+          value: '+${extraTime!.duration} min Â· ${extraTime!.priceLabel}',
         ),
       BookingSummaryTile(
         icon: Icons.person_outline,
-        label: 'Therapist',
-        value: therapist?.name ?? 'No preference',
+        label: l10n.tr('Therapist'),
+        value: therapist?.name ?? l10n.tr('No preference'),
       ),
       BookingSummaryTile(
         icon: Icons.calendar_month_outlined,
-        label: 'Date & time',
+        label: l10n.tr('Date & time'),
         value:
-            '${MaterialLocalizations.of(context).formatMediumDate(date)} · ${formatBookingTimeRange(context, slot)}',
+            '${MaterialLocalizations.of(context).formatMediumDate(date)} Â· ${formatBookingTimeRange(context, slot)}',
       ),
       if (totalPrice != null)
         BookingSummaryTile(
           icon: Icons.payments_outlined,
-          label: 'Total',
+          label: l10n.tr('Total'),
           value: '\$${totalPrice!.toStringAsFixed(0)}',
         ),
       const SizedBox(height: 16),
-      const Text(
-        'Your booking will be sent as a pending request. Payment options are shown after confirmation.',
+      Text(
+        l10n.tr('Your booking will be sent as a pending request. Payment options are shown after confirmation.'),
       ),
     ],
   );
 }
+}
+

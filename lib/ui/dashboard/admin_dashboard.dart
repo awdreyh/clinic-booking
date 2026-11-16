@@ -4,6 +4,7 @@ import '../../data/model/booking.dart';
 import '../../data/model/user.dart';
 import '../../data/repository/booking.dart';
 import '../../data/repository/user.dart';
+import '../../l10n/app_localizations.dart';
 import 'dashboard_widgets.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -48,15 +49,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not update booking: $error')),
+          SnackBar(content: Text(AppLocalizations.of(context).tr(
+            'Could not update booking: {error}', {'error': error},
+          ))),
         );
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) => DashboardScaffold(
-        title: 'Admin dashboard',
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return DashboardScaffold(
+        title: l10n.tr('Admin dashboard'),
         child: FutureBuilder<({List<Booking> bookings, List<User> users})>(
           future: _future,
           builder: (context, snapshot) {
@@ -84,7 +89,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     children: [
                       Expanded(
                         child: StatCard(
-                          label: 'Customers',
+                          label: l10n.tr('Customers'),
                           value: '$customers',
                           icon: Icons.people_outline,
                         ),
@@ -92,7 +97,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: StatCard(
-                          label: 'Therapists',
+                          label: l10n.tr('Therapists'),
                           value: '$therapists',
                           icon: Icons.medical_services_outlined,
                         ),
@@ -100,15 +105,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     ],
                   ),
                   StatCard(
-                    label: 'Pending bookings',
+                    label: l10n.tr('Pending bookings'),
                     value: '$pending',
                     icon: Icons.pending_actions,
                   ),
                   const SizedBox(height: 20),
-                  Text('Bookings', style: Theme.of(context).textTheme.titleLarge),
+                  Text(l10n.tr('Bookings'), style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 8),
                   if (data.bookings.isEmpty)
-                    const ListTile(title: Text('No bookings yet.')),
+                    ListTile(title: Text(l10n.tr('No bookings yet.'))),
                   for (final booking in data.bookings)
                     BookingCard(
                       booking: booking,
@@ -120,13 +125,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           : null,
                     ),
                   const SizedBox(height: 20),
-                  Text('Users', style: Theme.of(context).textTheme.titleLarge),
+                  Text(l10n.tr('Users'), style: Theme.of(context).textTheme.titleLarge),
                   for (final user in data.users)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.person_outline),
                       title: Text(user.name),
-                      subtitle: Text('${user.email} · ${user.role}'),
+                      subtitle: Text('${user.email} · ${l10n.tr(user.role)}'),
                     ),
                 ],
               ),
@@ -134,4 +139,5 @@ class _AdminDashboardState extends State<AdminDashboard> {
           },
         ),
       );
+  }
 }
