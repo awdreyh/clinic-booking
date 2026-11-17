@@ -80,7 +80,7 @@ class _HomeShellState extends State<HomeShell> {
                 const ProfilePage(role: 'therapist'),
               ],
             'admin' => <Widget>[
-                const AdminDashboard(),
+                 AdminDashboard(adminId: Supabase.instance.client.auth.currentUser!.id,),
                 const ProfilePage(role: 'admin'),
               ],
             _ => <Widget>[

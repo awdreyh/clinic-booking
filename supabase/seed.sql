@@ -32,22 +32,36 @@ where not exists (
   where existing.name = seed.name
 );
 
-insert into public.service (name, category_id)
-select seed.service_name, category.id from (values
-  ('Signature Wellness Collection', 'Relaxation Massage'),
-  ('Signature Wellness Collection', 'Chinese Acupressure'),
-  ('Signature Wellness Collection', 'Deep Tissue Massage'),
-  ('Signature Wellness Collection', 'Foot Reflexology'),
-  ('Signature Wellness Collection', 'Extra time'),
-  ('Premium Therapy Collection', 'Lymphatic Drainage Massage'),
-  ('Premium Therapy Collection', 'Hot Stone Massage'),
-  ('Premium Therapy Collection', 'extra time'),
-  ('Membership', 'Annual Membership'),
-  ('Package', '60-mins value pack'),
-  ('Package', '30-mins value pack')
-) as seed(category_name, service_name)
+insert into public.service (name, image, category_id)
+select seed.service_name, seed.image, category.id from (values
+  ('Signature Wellness Collection', 'Relaxation Massage', 'assets/services/default.jpg'),
+  ('Signature Wellness Collection', 'Chinese Acupressure', 'assets/services/chinese-acupressure.jpg'),
+  ('Signature Wellness Collection', 'Deep Tissue Massage', 'assets/services/default.jpg'),
+  ('Signature Wellness Collection', 'Foot Reflexology', 'assets/services/reflexology.jpg'),
+  ('Signature Wellness Collection', 'Extra time', 'assets/services/default.jpg'),
+  ('Premium Therapy Collection', 'Lymphatic Drainage Massage', 'assets/services/lymphatic-drainage-massage.jpg'),
+  ('Premium Therapy Collection', 'Hot Stone Massage', 'assets/services/hotstone.jpg'),
+  ('Premium Therapy Collection', 'extra time', 'assets/services/default.jpg'),
+  ('Membership', 'Annual Membership', 'assets/services/default.jpg'),
+  ('Package', '60-mins value pack', 'assets/services/default.jpg'),
+  ('Package', '30-mins value pack', 'assets/services/default.jpg')
+) as seed(category_name, service_name, image)
 join public.category category on category.name = seed.category_name
-where not exists (select 1 from public.service existing where existing.category_id = category.id and existing.name = seed.service_name);
+where not exists (
+  select 1
+  from public.service existing
+  where existing.name = seed.service_name
+    and existing.category_id = category.id
+);
+
+update public.service set image = case
+  when lower(name) like '%reflexology%' then 'assets/services/reflexology.jpg'
+  when lower(name) like '%lymphatic%' then 'assets/services/lymphatic-drainage-massage.jpg'
+  when lower(name) like '%aromatherapy%' or lower(name) like '%meridian%' then 'assets/services/aromatherapy-meridian-massage.jpg'
+  when lower(name) like '%acupressure%' then 'assets/services/chinese-acupressure.jpg'
+  when lower(name) like '%hot stone%' or lower(name) like '%hotstone%' then 'assets/services/hotstone.jpg'
+  else 'assets/services/default.jpg'
+end;
 
 -- Package tiers use sessions; timed services use duration. Membership has neither.
 insert into public.service_attribute (service_id, duration, sessions, price)

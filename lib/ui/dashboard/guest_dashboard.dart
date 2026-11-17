@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../data/model/category.dart';
 import '../../data/model/service.dart';
+import '../../data/repository/category.dart';
 import '../../data/repository/service.dart';
 import '../../l10n/app_localizations.dart';
 import '../core/welcome_page.dart';
@@ -10,8 +12,10 @@ import '../user/login.dart';
 import 'customer_home.dart';
 
 typedef _ServiceCatalog = ({
+  List<Category> categories,
   List<Service> services,
   Map<int, double> startingPrices,
+  Map<int, double> startingMemberPrices,
 });
 
 /// Guest landing page mirroring the signed-in dashboard, with a service catalog.
@@ -32,23 +36,38 @@ class _GuestDashboardState extends State<GuestDashboard> {
   }
 
   Future<_ServiceCatalog> _loadCatalog() async {
-    final services = await ServiceRepository().fetchServices();
+    final results = await Future.wait([
+      CategoryRepository().fetchCategories(),
+      ServiceRepository().fetchServices(),
+    ]);
+    final categories = results[0] as List<Category>;
+    final services = results[1] as List<Service>;
     final rows = await Supabase.instance.client
         .from('service_attribute')
-        .select('service_id, price');
+        .select('service_id, price, membership_price');
     final startingPrices = <int, double>{};
+    final startingMemberPrices = <int, double>{};
     for (final row in rows) {
       final values = Map<String, dynamic>.from(row);
       final serviceId = (values['service_id'] as num).toInt();
       final price = (values['price'] as num).toDouble();
       final current = startingPrices[serviceId];
       if (current == null || price < current) startingPrices[serviceId] = price;
+      final memberPrice = (values['membership_price'] as num?)?.toDouble();
+      if (memberPrice != null) {
+        final currentMemberPrice = startingMemberPrices[serviceId];
+        if (currentMemberPrice == null || memberPrice < currentMemberPrice) {
+          startingMemberPrices[serviceId] = memberPrice;
+        }
+      }
     }
     return (
+      categories: categories,
       services: services
           .where((service) => service.name.trim().toLowerCase() != 'extra time')
           .toList(),
       startingPrices: startingPrices,
+      startingMemberPrices: startingMemberPrices,
     );
   }
 
@@ -280,6 +299,29 @@ class _ServicesSection extends StatelessWidget {
     if (catalog.services.isEmpty) {
       return const SizedBox.shrink();
     }
+    final servicesByCategory = <int?, List<Service>>{};
+    for (final service in catalog.services) {
+      servicesByCategory.putIfAbsent(service.categoryId, () => []).add(service);
+    }
+    final sections = <({String title, List<Service> services})>[];
+    for (final category in catalog.categories) {
+      final services = servicesByCategory.remove(category.id);
+      if (services != null && services.isNotEmpty) {
+        sections.add((title: category.name, services: services));
+      }
+    }
+    final uncategorized = servicesByCategory.remove(null);
+    if (uncategorized != null && uncategorized.isNotEmpty) {
+      sections.add((title: l10n.tr('Other services'), services: uncategorized));
+    }
+    for (final entry in servicesByCategory.entries) {
+      if (entry.value.isNotEmpty) {
+        sections.add((
+          title: l10n.tr('Other services'),
+          services: entry.value,
+        ));
+      }
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
       child: Column(
@@ -303,23 +345,41 @@ class _ServicesSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: catalog.services.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 196,
+          for (final section in sections) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10, top: 4),
+              child: Text(
+                section.title,
+                style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF30372B),
+                ),
+              ),
             ),
-            itemBuilder: (context, index) => _ServiceCard(
-              service: catalog.services[index],
-              startingPrice: catalog.startingPrices[catalog.services[index].id],
-              l10n: l10n,
-              onTap: onBook,
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: section.services.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                mainAxisExtent: 196,
+              ),
+              itemBuilder: (context, index) {
+                final service = section.services[index];
+                return _ServiceCard(
+                  service: service,
+                  startingPrice: catalog.startingPrices[service.id],
+                  startingMemberPrice: catalog.startingMemberPrices[service.id],
+                  l10n: l10n,
+                  onTap: onBook,
+                );
+              },
             ),
-          ),
+            const SizedBox(height: 16),
+          ],
         ],
       ),
     );
@@ -330,12 +390,14 @@ class _ServiceCard extends StatelessWidget {
   const _ServiceCard({
     required this.service,
     required this.startingPrice,
+    required this.startingMemberPrice,
     required this.l10n,
     required this.onTap,
   });
 
   final Service service;
   final double? startingPrice;
+  final double? startingMemberPrice;
   final AppLocalizations l10n;
   final VoidCallback onTap;
 
@@ -354,16 +416,16 @@ class _ServiceCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: service.image?.isNotEmpty == true
-                  ? Image.network(
-                      service.image!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Image.asset(
-                        'assets/enso-bg.jpg',
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : Image.asset('assets/enso-bg.jpg', fit: BoxFit.cover),
+              child: Image.asset(
+                service.image?.isNotEmpty == true
+                    ? service.image!
+                    : 'assets/services/default.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Image.asset(
+                  'assets/services/default.jpg',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(11, 8, 10, 9),
@@ -390,6 +452,19 @@ class _ServiceCard extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF4A5D3E),
+                      ),
+                    ),
+                  ],
+                  if (startingMemberPrice != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.tr('Member price from {price}', {
+                        'price': '\$${startingMemberPrice!.toStringAsFixed(0)}',
+                      }),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF8B6A35),
                       ),
                     ),
                   ],

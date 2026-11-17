@@ -321,19 +321,16 @@ class _ServiceCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: ClipOval(
-                    child: service.image?.isNotEmpty == true
-                        ? Image.network(
-                            service.image!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const Icon(
-                              Icons.spa_outlined,
-                              color: Color(0xFF4A5D3E),
-                            ),
-                          )
-                        : const Icon(
-                            Icons.spa_outlined,
-                            color: Color(0xFF4A5D3E),
-                          ),
+                    child: Image.asset(
+                      service.image?.isNotEmpty == true
+                          ? service.image!
+                          : 'assets/services/default.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Image.asset(
+                        'assets/services/default.jpg',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 11),

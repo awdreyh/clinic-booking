@@ -196,11 +196,20 @@ update public."user"
 set is_member = true
 where id = '4fc7d318-71e9-4f03-b12c-9e276aa75107';
 
--- Link every seeded therapist to every service already present in the catalog.
+-- Keep therapist availability limited to services in categories 2 and 3.
+
+
+delete from public.service_therapist as link
+using public."user" as therapist, public.service as service
+where link.therapist_id = therapist.id
+  and link.service_id = service.id
+  and therapist.role = 'therapist'
+  and service.category_id not in (2, 3);
+
 insert into public.service_therapist (therapist_id, service_id)
 select therapist.id, service.id
 from public."user" as therapist
-cross join public.service as service
+join public.service as service on service.category_id in (2, 3)
 where therapist.role = 'therapist'
   and not exists (
     select 1
@@ -208,3 +217,5 @@ where therapist.role = 'therapist'
     where existing.therapist_id = therapist.id
       and existing.service_id = service.id
   );
+
+

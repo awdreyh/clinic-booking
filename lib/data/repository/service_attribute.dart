@@ -7,36 +7,52 @@ class ServiceAttributeRepository {
         .from('service_attribute')
         .select()
         .eq('service_id', serviceId)
-        .order('attribute_key');
+        .order('duration', nullsFirst: false)
+        .order('sessions', nullsFirst: false);
     return (rows as List)
-        .map((row) =>
-            ServiceAttribute.fromJson(Map<String, dynamic>.from(row)))
+        .map((row) => ServiceAttribute.fromJson(
+              Map<String, dynamic>.from(row),
+            ))
         .toList();
   }
 
   Future<ServiceAttribute> createAttribute({
     required int serviceId,
-    required String key,
-    required String value,
+    int? duration,
+    int? sessions,
+    required double price,
+    double? membershipPrice,
   }) async {
+    _validateTier(duration: duration, sessions: sessions);
     final row = await supabase.from('service_attribute').insert({
       'service_id': serviceId,
-      'attribute_key': key,
-      'attribute_value': value,
+      'duration': duration,
+      'sessions': sessions,
+      'price': price,
+      'membership_price': membershipPrice,
     }).select().single();
-    return ServiceAttribute.fromJson(row);
+    return ServiceAttribute.fromJson(Map<String, dynamic>.from(row));
   }
 
   Future<ServiceAttribute> updateAttribute(ServiceAttribute attribute) async {
+    _validateTier(duration: attribute.duration, sessions: attribute.sessions);
     final row = await supabase.from('service_attribute').update({
       'service_id': attribute.serviceId,
-      'attribute_key': attribute.attributeKey,
-      'attribute_value': attribute.attributeValue,
+      'duration': attribute.duration,
+      'sessions': attribute.sessions,
+      'price': attribute.price,
+      'membership_price': attribute.membershipPrice,
     }).eq('id', attribute.id).select().single();
-    return ServiceAttribute.fromJson(row);
+    return ServiceAttribute.fromJson(Map<String, dynamic>.from(row));
   }
 
   Future<void> deleteAttribute(int id) async {
     await supabase.from('service_attribute').delete().eq('id', id);
+  }
+
+  void _validateTier({int? duration, int? sessions}) {
+    if (duration != null && sessions != null) {
+      throw ArgumentError('A service tier cannot have both duration and sessions.');
+    }
   }
 }

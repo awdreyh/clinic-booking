@@ -8,7 +8,8 @@ import '../../l10n/app_localizations.dart';
 import 'dashboard_widgets.dart';
 
 class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({super.key});
+  const AdminDashboard({ super.key, required this.adminId});
+  final String adminId;
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();

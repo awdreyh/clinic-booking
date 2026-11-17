@@ -70,6 +70,30 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _sendPasswordReset() async {
+    final l10n = AppLocalizations.of(context);
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      _showSnackBar(l10n.tr('Enter your email address to reset your password.'));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await supabase.auth.resetPasswordForEmail(email);
+      _showSnackBar(l10n.tr('If an account exists for this email, a password reset link has been sent.'));
+    } on AuthException catch (error) {
+      debugPrint('Password reset failed: ${error.message}');
+      _showSnackBar(error.message);
+    } catch (error, stackTrace) {
+      debugPrint('Password reset failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      _showSnackBar(l10n.tr('An unexpected error occurred.'));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -104,6 +128,14 @@ class _AuthScreenState extends State<AuthScreen> {
               decoration: InputDecoration(labelText: l10n.password),
               obscureText: true,
             ),
+            if (!_isSignUp)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _isLoading ? null : _sendPasswordReset,
+                  child: Text(l10n.forgotPassword),
+                ),
+              ),
             const SizedBox(height: 20),
             _isLoading
                 ? const CircularProgressIndicator()

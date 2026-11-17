@@ -147,15 +147,4 @@ where sa.service_id = service.id
     ))
   );
 
--- Make every therapist available for every service in the seeded catalog.
-insert into public.service_therapist (therapist_id, service_id)
-select therapist.id, service.id
-from public."user" as therapist
-cross join public.service as service
-where therapist.role = 'therapist'
-  and not exists (
-    select 1
-    from public.service_therapist as existing
-    where existing.therapist_id = therapist.id
-      and existing.service_id = service.id
-  );
+
