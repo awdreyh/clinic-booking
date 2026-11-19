@@ -41,6 +41,7 @@ class BookingStep1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     Service? extraTimeService;
     for (final service in services) {
       if (service.name.trim().toLowerCase() == 'extra time') {
@@ -58,8 +59,8 @@ class BookingStep1 extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
       children: [
-        const Text(
-          'YOUR MOMENT OF CALM',
+        Text(
+          l10n.tr('YOUR MOMENT OF CALM'),
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w700,
@@ -68,8 +69,8 @@ class BookingStep1 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 5),
-        const Text(
-          'Choose your ritual',
+        Text(
+          l10n.tr('Choose your ritual'),
           style: TextStyle(
             fontSize: 30,
             height: 1.12,
@@ -77,14 +78,14 @@ class BookingStep1 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
-          'Find your collection, then select a treatment.',
+        Text(
+          l10n.tr('Find your collection, then select a treatment.'),
           style: TextStyle(fontSize: 13, color: Color(0xFF797A6F)),
         ),
         const SizedBox(height: 20),
         if (categories.isEmpty)
-          const BookingEmptyState(
-            message: 'No service collections are available yet.',
+          BookingEmptyState(
+            message: l10n.tr('No service collections are available yet.'),
           )
         else
           GridView.builder(
@@ -114,8 +115,8 @@ class BookingStep1 extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           if (treatments.isEmpty)
-            const BookingEmptyState(
-              message: 'No treatments in this collection.',
+          BookingEmptyState(
+            message: l10n.tr('No treatments in this collection.'),
             )
           else
             for (final service in treatments)
@@ -132,13 +133,13 @@ class BookingStep1 extends StatelessWidget {
               ),
           if (extraTimeOptions.isNotEmpty) ...[
             const SizedBox(height: 15),
-            const Text(
-              'A little more time',
+            Text(
+              l10n.tr('A little more time'),
               style: TextStyle(fontSize: 22, color: _ink),
             ),
             const SizedBox(height: 5),
-            const Text(
-              'Add a little extra time to your visit.',
+            Text(
+              l10n.tr('Add a little extra time to your visit.'),
               style: TextStyle(fontSize: 12, color: Color(0xFF797A6F)),
             ),
             const SizedBox(height: 10),
@@ -156,7 +157,7 @@ class BookingStep1 extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          const Row(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
@@ -168,7 +169,7 @@ class BookingStep1 extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'A little more than a treatment',
+                      l10n.tr('A little more than a treatment'),
                       style: TextStyle(
                         fontSize: 18,
                         color: _ink,
@@ -176,7 +177,7 @@ class BookingStep1 extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'A personal consultation and a calming herbal tea are included with every ritual.',
+                      l10n.tr('A personal consultation and a calming herbal tea are included with every ritual.'),
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.5,
@@ -256,10 +257,10 @@ class _CollectionCard extends StatelessWidget {
                   ),
                 ],
                 if (selected)
-                  const Padding(
+                   Padding(
                     padding: EdgeInsets.only(top: 4),
                     child: Text(
-                      'SELECTED COLLECTION',
+                      AppLocalizations.of(context).tr('SELECTED COLLECTION'),
                       style: TextStyle(
                         fontSize: 8,
                         fontWeight: FontWeight.w700,

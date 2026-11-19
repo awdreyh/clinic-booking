@@ -1,4 +1,4 @@
-package com.example.clinic_booking
+package com.enso_space
 
 import io.flutter.embedding.android.FlutterActivity
 

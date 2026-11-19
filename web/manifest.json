@@ -1,6 +1,6 @@
 {
-    "name": "clinic_booking",
-    "short_name": "clinic_booking",
+    "name": "Enso Space",
+    "short_name": "enso_space",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

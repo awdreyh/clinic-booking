@@ -85,7 +85,7 @@ class BookingStep2 extends StatelessWidget {
             ),
           ),
           Text(
-            '${therapists.length} available',
+            l10n.tr('{count} available', {'count': therapists.length}),
             style: const TextStyle(fontSize: 10, color: _muted),
           ),
         ],
@@ -176,7 +176,9 @@ class _NoPreferenceCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "We'll match you with an available therapist.",
+                    AppLocalizations.of(context).tr(
+                      "We'll match you with an available therapist.",
+                    ),
                     style: TextStyle(fontSize: 11, color: Color(0xFF797A6F)),
                   ),
                 ],
@@ -296,7 +298,7 @@ class _TherapistCard extends StatelessWidget {
                         if (services.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
-                            'Services Â· ${services.map((service) => service.name).join(' Â· ')}',
+                            '${AppLocalizations.of(context).tr('Services')} · ${services.map((service) => service.name).join(' · ')}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -309,7 +311,10 @@ class _TherapistCard extends StatelessWidget {
                         if (experience != null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            '$experience years of practice',
+                            AppLocalizations.of(context).tr(
+                              '{count} years of practice',
+                              {'count': experience},
+                            ),
                             style: const TextStyle(
                               fontSize: 10,
                               color: Color(0xFF797A6F),
@@ -327,7 +332,12 @@ class _TherapistCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 3),
                               Text(
-                                '$rating${reviews == null ? '' : '  ($reviews reviews)'}',
+                                reviews == null
+                                    ? rating
+                                    : AppLocalizations.of(context).tr(
+                                        '{rating} ({count} reviews)',
+                                        {'rating': rating, 'count': reviews},
+                                      ),
                                 style: const TextStyle(
                                   fontSize: 10,
                                   color: Color(0xFF30372B),
