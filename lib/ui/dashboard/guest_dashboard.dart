@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/model/category.dart';
@@ -64,7 +64,7 @@ class _GuestDashboardState extends State<GuestDashboard> {
     return (
       categories: categories,
       services: services
-          .where((service) => service.name.trim().toLowerCase() != 'extra time')
+          .where((service) => service.nameFor('en').trim().toLowerCase() != 'extra time')
           .toList(),
       startingPrices: startingPrices,
       startingMemberPrices: startingMemberPrices,
@@ -198,7 +198,7 @@ class _GuestHero extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       const Text(
-                        'ENSO SPACE · 渊心.养身',
+                        'ENSO SPACE Â· æ¸Šå¿ƒ.å…»èº«',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -307,7 +307,7 @@ class _ServicesSection extends StatelessWidget {
     for (final category in catalog.categories) {
       final services = servicesByCategory.remove(category.id);
       if (services != null && services.isNotEmpty) {
-        sections.add((title: category.name, services: services));
+        sections.add((title: category.nameFor(l10n.localeName), services: services));
       }
     }
     final uncategorized = servicesByCategory.remove(null);
@@ -433,7 +433,7 @@ class _ServiceCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    service.name,
+                    service.nameFor(l10n.localeName),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

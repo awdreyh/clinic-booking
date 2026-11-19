@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/service.dart';
 import '../../data/model/user.dart';
@@ -111,8 +111,8 @@ class _TherapistListPageState extends State<TherapistListPage> {
                                     const SizedBox(height: 4),
                                     Text(
                                       services
-                                          .map((service) => service.name)
-                                          .join(' · '),
+                                          .map((service) => service.nameFor(l10n.localeName))
+                                          .join(' Â· '),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),

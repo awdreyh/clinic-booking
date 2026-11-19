@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/category.dart';
 import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
+import '../../l10n/app_localizations.dart';
 
 class BookingPriceOption {
   const BookingPriceOption({
@@ -61,7 +62,9 @@ class BookingServiceSummary extends StatelessWidget {
   final VoidCallback? onEdit;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     decoration: BoxDecoration(
       color: const Color(0xFFF0EEE5),
@@ -84,7 +87,7 @@ class BookingServiceSummary extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                service?.name ?? 'Selected treatment',
+                service?.nameFor(l10n.localeName) ?? 'Selected treatment',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -103,7 +106,7 @@ class BookingServiceSummary extends StatelessWidget {
                         : priceOption!.label,
                   if (extraTime != null)
                     '+${extraTime!.duration ?? 0} min extra time',
-                ].join(' · '),
+                ].join(' Â· '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 10, color: Color(0xFF797A6F)),
@@ -131,6 +134,7 @@ class BookingServiceSummary extends StatelessWidget {
       ],
     ),
   );
+  }
 }
 
 String formatBookingTimeRange(BuildContext context, Timeslot slot) {
@@ -164,7 +168,9 @@ class BookingCategoryButton extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Material(
           color: Colors.transparent,
@@ -210,15 +216,15 @@ class BookingCategoryButton extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                category.name,
+                                category.nameFor(l10n.localeName),
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleLarge
                                     ?.copyWith(color: Colors.white),
                               ),
-                              if (category.description?.isNotEmpty == true)
+                              if (category.descriptionFor(l10n.localeName)?.isNotEmpty == true)
                                 Text(
-                                  category.description!,
+                                  category.descriptionFor(l10n.localeName)!,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context)
@@ -239,6 +245,7 @@ class BookingCategoryButton extends StatelessWidget {
           ),
         ),
       );
+  }
 }
 
 class BookingImageOrIcon extends StatelessWidget {

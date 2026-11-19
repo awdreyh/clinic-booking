@@ -44,13 +44,13 @@ class BookingStep1 extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     Service? extraTimeService;
     for (final service in services) {
-      if (service.name.trim().toLowerCase() == 'extra time') {
+      if (service.nameFor('en').trim().toLowerCase() == 'extra time') {
         extraTimeService = service;
         break;
       }
     }
     final treatments = services
-        .where((service) => service.name.trim().toLowerCase() != 'extra time')
+        .where((service) => service.nameFor('en').trim().toLowerCase() != 'extra time')
         .toList();
     final extraTimeOptions = extraTimeService == null
         ? const <BookingPriceOption>[]
@@ -102,12 +102,13 @@ class BookingStep1 extends StatelessWidget {
               category: categories[index],
               selected: categories[index].id == categoryId,
               onTap: () => onCategorySelected(categories[index]),
+              l10n: l10n,
             ),
           ),
         if (categoryId != null) ...[
           const SizedBox(height: 18),
           Text(
-            '${categories.firstWhere((category) => category.id == categoryId, orElse: () => categories.first).name} services',
+            '${categories.firstWhere((category) => category.id == categoryId, orElse: () => categories.first).nameFor(l10n.localeName)} services',
             style: const TextStyle(
               fontSize: 22,
               color: _ink,
@@ -130,6 +131,7 @@ class BookingStep1 extends StatelessWidget {
                 isMember: isMember,
                 onTap: () => onServiceSelected(service),
                 onPriceSelected: (option) => onPriceSelected(service, option),
+                l10n: l10n,
               ),
           if (extraTimeOptions.isNotEmpty) ...[
             const SizedBox(height: 15),
@@ -200,10 +202,12 @@ class _CollectionCard extends StatelessWidget {
     required this.category,
     required this.selected,
     required this.onTap,
+     required this.l10n,
   });
   final Category category;
   final bool selected;
   final VoidCallback onTap;
+  final AppLocalizations l10n;
   @override
   Widget build(BuildContext context) => Material(
     color: selected ? const Color(0xFFEEF1E7) : Colors.white,
@@ -235,7 +239,7 @@ class _CollectionCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  category.name,
+                  category.nameFor(l10n.localeName),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -244,10 +248,10 @@ class _CollectionCard extends StatelessWidget {
                     color: Color(0xFF30372B),
                   ),
                 ),
-                if (category.description?.isNotEmpty == true) ...[
+                if (category.descriptionFor(l10n.localeName)?.isNotEmpty == true) ...[
                   const SizedBox(height: 4),
                   Text(
-                    category.description!,
+                    category.descriptionFor(l10n.localeName)!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -287,6 +291,7 @@ class _ServiceCard extends StatelessWidget {
     required this.isMember,
     required this.onTap,
     required this.onPriceSelected,
+    required this.l10n,
   });
   final Service service;
   final bool selected;
@@ -295,6 +300,7 @@ class _ServiceCard extends StatelessWidget {
   final bool isMember;
   final VoidCallback onTap;
   final ValueChanged<BookingPriceOption> onPriceSelected;
+  final AppLocalizations l10n;
   @override
   Widget build(BuildContext context) => Container(
     margin: const EdgeInsets.only(bottom: 9),
@@ -340,16 +346,16 @@ class _ServiceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        service.name,
+                        service.nameFor(l10n.localeName),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF30372B),
                         ),
                       ),
-                      if (service.description?.isNotEmpty == true)
+                      if (service.descriptionFor(l10n.localeName)?.isNotEmpty == true)
                         Text(
-                          service.description!,
+                          service.descriptionFor(l10n.localeName)!,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

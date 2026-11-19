@@ -1,65 +1,81 @@
-insert into public.category (name, description)
+﻿insert into public.category (name, description)
 select seed.name, seed.description
 from (
   values
     (
-      'Signature Wellness Collection',
-      'Our Signature Wellness Collection features Enso''s core therapeutic massage treatments, designed to relieve tension, restore balance, and support your overall wellbeing. Whether you seek deep muscle relief, gentle relaxation, traditional Chinese acupressure, or revitalising foot reflexology, each treatment is tailored to your individual needs for a personalised wellness experience.'
+      '{"en":"Signature Wellness Collection","zh":"臻选养生系列"}'::jsonb,
+      '{"en":"Our Signature Wellness Collection features Enso''s core therapeutic massage treatments, designed to relieve tension, restore balance, and support your overall wellbeing. Whether you seek deep muscle relief, gentle relaxation, traditional Chinese acupressure, or revitalising foot reflexology, each treatment is tailored to your individual needs for a personalised wellness experience.","zh":"è‡»é€‰å…»ç”Ÿç³»åˆ—æ±‡é›† Enso æ ¸å¿ƒæŒ‰æ‘©æŠ¤ç†ï¼Œæ—¨åœ¨ç¼“è§£ç´§å¼ ã€æ¢å¤å¹³è¡¡å¹¶æå‡æ•´ä½“å¥åº·ã€‚æ— è®ºæ‚¨éœ€è¦æ·±å±‚è‚Œè‚‰æ”¾æ¾ã€èˆ’ç¼“æŒ‰æ‘©ã€ä¼ ç»Ÿä¸­å¼æŒ‡åŽ‹æˆ–ç„•æ´»è¶³åº•åå°„ç–—æ³•ï¼Œæ¯é¡¹æŠ¤ç†éƒ½ä¼šæ ¹æ®æ‚¨çš„éœ€æ±‚é‡èº«å®šåˆ¶ã€‚"}'::jsonb
     ),
     (
-      'Premium Therapy Collection',
-      'Our Premium Therapy Collection offers specialised treatments that enhance the benefits of traditional massage through advanced therapeutic techniques. Featuring Hot Stone Therapy and Lymphatic Drainage Therapy, these treatments help improve circulation, encourage detoxification, ease muscular tension, and promote deep relaxation and recovery.'
+      '{"en":"Premium Therapy Collection","zh":"尊享理疗系列"}'::jsonb,
+      '{"en":"Our Premium Therapy Collection offers specialised treatments that enhance the benefits of traditional massage through advanced therapeutic techniques. Featuring Hot Stone Therapy and Lymphatic Drainage Therapy, these treatments help improve circulation, encourage detoxification, ease muscular tension, and promote deep relaxation and recovery.","zh":"å°Šäº«ç†ç–—ç³»åˆ—é‡‡ç”¨ä¸“ä¸šç–—æ³•æå‡ä¼ ç»ŸæŒ‰æ‘©çš„æ•ˆæžœï¼ŒåŒ…å«çƒ­çŸ³ç–—æ³•å’Œæ·‹å·´å¼•æµæŒ‰æ‘©ï¼Œå¸®åŠ©ä¿ƒè¿›å¾ªçŽ¯ã€èˆ’ç¼“è‚Œè‚‰ç´§å¼ ï¼Œå¹¶å¸¦æ¥æ·±åº¦æ”¾æ¾ä¸Žæ¢å¤ã€‚"}'::jsonb
     ),
     (
-      'Offer',
-      'Value packages and memberships for regular visits.'
+      '{"en":"Offer","zh":"优惠项目"}'::jsonb,
+      '{"en":"Value packages and memberships for regular visits.","zh":"é€‚åˆå®šæœŸåˆ°è®¿çš„å¥—é¤ä¸Žä¼šå‘˜è®¡åˆ’ã€‚"}'::jsonb
     )
 ) as seed(name, description)
 where not exists (
   select 1
   from public.category existing
-  where existing.name = seed.name
+  where existing.name->>'en' = seed.name->>'en'
 );
+
+-- Refresh localized labels/descriptions for categories created by earlier seed runs.
+update public.category as existing
+set name = seed.name,
+    description = seed.description
+from (values
+  ('Signature Wellness Collection', '{"en":"Signature Wellness Collection","zh":"臻选养生系列"}'::jsonb,
+   '{"en":"Our Signature Wellness Collection features Enso''s core therapeutic massage treatments, designed to relieve tension, restore balance, and support your overall wellbeing. Whether you seek deep muscle relief, gentle relaxation, traditional Chinese acupressure, or revitalising foot reflexology, each treatment is tailored to your individual needs for a personalised wellness experience.","zh":"臻选养生系列汇集 Enso 核心按摩护理，旨在缓解紧张、恢复平衡并提升整体健康。无论您需要深层肌肉放松、舒缓按摩、传统中式指压或足底反射疗法，每项护理都会根据您的需求量身定制。"}'::jsonb),
+  ('Premium Therapy Collection', '{"en":"Premium Therapy Collection","zh":"尊享理疗系列"}'::jsonb,
+   '{"en":"Our Premium Therapy Collection offers specialised treatments that enhance the benefits of traditional massage through advanced therapeutic techniques. Featuring Hot Stone Therapy and Lymphatic Drainage Therapy, these treatments help improve circulation, encourage detoxification, ease muscular tension, and promote deep relaxation and recovery.","zh":"尊享理疗系列采用专业疗法提升传统按摩的效果，包含热石疗法和淋巴引流按摩，帮助促进循环、舒缓肌肉紧张，并带来深度放松与恢复。"}'::jsonb),
+  ('Offer', '{"en":"Offer","zh":"优惠项目"}'::jsonb,
+   '{"en":"Value packages and memberships for regular visits.","zh":"适合定期到访的套餐与会员计划。"}'::jsonb),
+  ('Package', '{"en":"Package","zh":"疗程套餐"}'::jsonb, null::jsonb),
+  ('Membership', '{"en":"Membership","zh":"会员计划"}'::jsonb, null::jsonb)
+) as seed(english_name, name, description)
+where existing.name->>'en' = seed.english_name;
 
 -- Package and Membership are child categories of Offer.
 insert into public.category (name, parent_id)
 select seed.name, offer.id
-from (values ('Package'), ('Membership')) as seed(name)
-join public.category offer on offer.name = 'Offer'
+from (values ('{"en":"Package","zh":"疗程套餐"}'::jsonb), ('{"en":"Membership","zh":"会员计划"}'::jsonb)) as seed(name)
+join public.category offer on offer.name->>'en' = 'Offer'
 where not exists (
   select 1
   from public.category existing
-  where existing.name = seed.name
+  where existing.name->>'en' = seed.name->>'en'
 );
 
 insert into public.service (name, image, category_id)
-select seed.service_name, seed.image, category.id from (values
-  ('Signature Wellness Collection', 'Relaxation Massage', 'assets/services/default.jpg'),
-  ('Signature Wellness Collection', 'Chinese Acupressure', 'assets/services/chinese-acupressure.jpg'),
-  ('Signature Wellness Collection', 'Deep Tissue Massage', 'assets/services/default.jpg'),
-  ('Signature Wellness Collection', 'Foot Reflexology', 'assets/services/reflexology.jpg'),
-  ('Signature Wellness Collection', 'Extra time', 'assets/services/default.jpg'),
-  ('Premium Therapy Collection', 'Lymphatic Drainage Massage', 'assets/services/lymphatic-drainage-massage.jpg'),
-  ('Premium Therapy Collection', 'Hot Stone Massage', 'assets/services/hotstone.jpg'),
-  ('Premium Therapy Collection', 'extra time', 'assets/services/default.jpg'),
-  ('Membership', 'Annual Membership', 'assets/services/default.jpg'),
-  ('Package', '60-mins value pack', 'assets/services/default.jpg'),
-  ('Package', '30-mins value pack', 'assets/services/default.jpg')
-) as seed(category_name, service_name, image)
-join public.category category on category.name = seed.category_name
+select jsonb_build_object('en', seed.service_name, 'zh', seed.service_name_zh), seed.image, category.id from (values
+  ('Signature Wellness Collection', 'Relaxation Massage', '舒缓按摩', 'assets/services/default.jpg'),
+  ('Signature Wellness Collection', 'Chinese Acupressure', '中式指压', 'assets/services/chinese-acupressure.jpg'),
+  ('Signature Wellness Collection', 'Deep Tissue Massage', '深层组织按摩', 'assets/services/default.jpg'),
+  ('Signature Wellness Collection', 'Foot Reflexology', '足底反射疗法', 'assets/services/reflexology.jpg'),
+  ('Signature Wellness Collection', 'Extra time', '加时', 'assets/services/default.jpg'),
+  ('Premium Therapy Collection', 'Lymphatic Drainage Massage', '淋巴引流按摩', 'assets/services/lymphatic-drainage-massage.jpg'),
+  ('Premium Therapy Collection', 'Hot Stone Massage', '热石按摩', 'assets/services/hotstone.jpg'),
+  ('Premium Therapy Collection', 'extra time', '加时', 'assets/services/default.jpg'),
+  ('Membership', 'Annual Membership', '年度会员', 'assets/services/default.jpg'),
+  ('Package', '60-mins value pack', '60分钟疗程套餐', 'assets/services/default.jpg'),
+  ('Package', '30-mins value pack', '30分钟疗程套餐', 'assets/services/default.jpg')
+) as seed(category_name, service_name, service_name_zh, image)
+join public.category category on category.name->>'en' = seed.category_name
 where not exists (
   select 1
   from public.service existing
-  where existing.name = seed.service_name
+  where existing.name->>'en' = seed.service_name
     and existing.category_id = category.id
 );
 
 update public.service set image = case
-  when lower(name) like '%reflexology%' then 'assets/services/reflexology.jpg'
-  when lower(name) like '%lymphatic%' then 'assets/services/lymphatic-drainage-massage.jpg'
-  when lower(name) like '%aromatherapy%' or lower(name) like '%meridian%' then 'assets/services/aromatherapy-meridian-massage.jpg'
-  when lower(name) like '%acupressure%' then 'assets/services/chinese-acupressure.jpg'
-  when lower(name) like '%hot stone%' or lower(name) like '%hotstone%' then 'assets/services/hotstone.jpg'
+  when lower(name->>'en') like '%reflexology%' then 'assets/services/reflexology.jpg'
+  when lower(name->>'en') like '%lymphatic%' then 'assets/services/lymphatic-drainage-massage.jpg'
+  when lower(name->>'en') like '%aromatherapy%' or lower(name->>'en') like '%meridian%' then 'assets/services/aromatherapy-meridian-massage.jpg'
+  when lower(name->>'en') like '%acupressure%' then 'assets/services/chinese-acupressure.jpg'
+  when lower(name->>'en') like '%hot stone%' or lower(name->>'en') like '%hotstone%' then 'assets/services/hotstone.jpg'
   else 'assets/services/default.jpg'
 end;
 
@@ -108,8 +124,8 @@ select service.id, seed.duration, seed.sessions, seed.price from (values
   ('Package', '30-mins value pack', null, 5, 340),
   ('Package', '30-mins value pack', null, 10, 680)
 ) as seed(category_name, service_name, duration, sessions, price)
-join public.category category on category.name = seed.category_name
-join public.service service on service.category_id = category.id and service.name = seed.service_name
+join public.category category on category.name->>'en' = seed.category_name
+join public.service service on service.category_id = category.id and service.name->>'en' = seed.service_name
 where not exists (
   select 1 from public.service_attribute existing
   where existing.service_id = service.id

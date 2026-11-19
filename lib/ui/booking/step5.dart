@@ -46,7 +46,7 @@ class BookingStep5 extends StatelessWidget {
       BookingSummaryTile(
         icon: Icons.spa_outlined,
         label: l10n.tr('Service'),
-        value: service.name,
+        value: service.nameFor(l10n.localeName),
       ),
       BookingSummaryTile(
         icon: Icons.person_outline,

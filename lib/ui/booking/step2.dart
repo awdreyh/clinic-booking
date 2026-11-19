@@ -232,6 +232,7 @@ class _TherapistCard extends StatelessWidget {
     final rating = _metadataText(['rating', 'average_rating']);
     final reviews = _metadataText(['review_count', 'reviews', 'rating_count']);
     final photoUrl = therapist.photoUrl;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -298,7 +299,7 @@ class _TherapistCard extends StatelessWidget {
                         if (services.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
-                            '${AppLocalizations.of(context).tr('Services')} · ${services.map((service) => service.name).join(' · ')}',
+                            '${l10n.tr('Services')} · ${services.map((service) => service.nameFor(l10n.localeName)).join(' · ')}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

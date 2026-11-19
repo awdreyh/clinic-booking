@@ -59,7 +59,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   String? get _collectionName {
     final categoryId = _service?.categoryId;
     for (final category in _categoryItems) {
-      if (category.id == categoryId) return category.name;
+      if (category.id == categoryId) return category.nameFor('en');
     }
     return null;
   }
@@ -184,7 +184,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   List<Category> _visibleCollections(List<Category> categories) => [
     for (final category in categories)
       if (category.parentId == null &&
-          category.name.trim().toLowerCase() != 'offer')
+          category.nameFor('en').trim().toLowerCase() != 'offer')
         category,
   ];
 
@@ -829,7 +829,7 @@ class _PaymentPage extends StatelessWidget {
         BookingSummaryTile(
           icon: Icons.spa_outlined,
           label: 'Service',
-          value: service.name,
+          value: service.nameFor(AppLocalizations.of(context).localeName),
         ),
         if (totalPrice != null)
           BookingSummaryTile(

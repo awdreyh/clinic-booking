@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
 import '../../data/model/service.dart';
@@ -88,16 +88,16 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.calendar_today_outlined),
             title: Text(localizations.formatMediumDate(start)),
-            subtitle: Text('${time(start)} – ${time(end)}'),
+            subtitle: Text('${time(start)} â€“ ${time(end)}'),
           ),
           if (widget.service != null)
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.medical_services_outlined),
-              title: Text(widget.service!.name),
-              subtitle: widget.service!.description == null
+              title: Text(widget.service!.nameFor(l10n.localeName)),
+              subtitle: widget.service!.descriptionFor(l10n.localeName) == null
                   ? null
-                  : Text(widget.service!.description!),
+                  : Text(widget.service!.descriptionFor(l10n.localeName)!),
             ),
           const SizedBox(height: 24),
           FilledButton(

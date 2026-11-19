@@ -19,8 +19,8 @@ class ServiceRepository {
   }
 
   Future<Service> createService({
-    required String name,
-    String? description,
+    required Map<String, String> name,
+    Map<String, String>? description,
     String? image,
     int? categoryId,
   }) async {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
@@ -153,25 +153,25 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
                       for (final service in widget.services)
                         DropdownMenuItem<int?>(
                           value: service.id,
-                          child: Text(service.name),
+                          child: Text(service.nameFor(l10n.localeName)),
                         ),
                     ],
                     onChanged: (id) => setState(() => _selectedServiceId = id),
                   ),
-                  if (selectedService?.description?.isNotEmpty == true)
+                  if (selectedService?.descriptionFor(l10n.localeName)?.isNotEmpty == true)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(selectedService!.description!),
+                      child: Text(selectedService!.descriptionFor(l10n.localeName)!),
                     ),
                   const SizedBox(height: 8),
                   for (final service in widget.services)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.medical_services_outlined),
-                      title: Text(service.name),
-                      subtitle: service.description == null
+                      title: Text(service.nameFor(l10n.localeName)),
+                      subtitle: service.descriptionFor(l10n.localeName) == null
                           ? null
-                          : Text(service.description!),
+                          : Text(service.descriptionFor(l10n.localeName)!),
                     ),
                 ],
                 const SizedBox(height: 24),
@@ -217,7 +217,7 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
                         leading: const Icon(Icons.schedule_outlined),
-                        title: Text('${slot.startTime} – ${slot.endTime}'),
+                        title: Text('${slot.startTime} â€“ ${slot.endTime}'),
                         subtitle: Text(l10n.tr('Available')),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: slot.isAvailable ? () => _openBooking(slot) : null,

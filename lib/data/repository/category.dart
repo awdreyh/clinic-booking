@@ -10,8 +10,8 @@ class CategoryRepository {
   }
 
   Future<Category> createCategory({
-    required String name,
-    String? description,
+    required Map<String, String> name,
+    Map<String, String>? description,
     String? image,
     int? parentId,
   }) async {
