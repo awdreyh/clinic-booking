@@ -101,7 +101,9 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
           SizedBox(
             height: 240,
             width: double.infinity,
-            child: therapist.photoUrl == null ||
+            child: therapist.photoAsset != null
+                ? Image.asset(therapist.photoAsset!, fit: BoxFit.cover)
+                : therapist.photoUrl == null ||
                     therapist.photoUrl!.isEmpty
                 ? Container(
                     color: colors.surfaceContainerHighest,
@@ -123,9 +125,9 @@ class _TherapistDetailPageState extends State<TherapistDetailPage> {
               children: [
                 Text(therapist.name,
                     style: Theme.of(context).textTheme.headlineSmall),
-                if (therapist.description?.isNotEmpty == true) ...[
+                if (therapist.descriptionFor(l10n.localeName)?.isNotEmpty == true) ...[
                   const SizedBox(height: 8),
-                  Text(therapist.description!),
+                  Text(therapist.descriptionFor(l10n.localeName)!),
                 ],
                 const SizedBox(height: 16),
                 if (therapist.phone.isNotEmpty == true)

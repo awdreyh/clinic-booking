@@ -93,12 +93,12 @@ class _HomeShellState extends State<HomeShell> {
           };
           final labels = switch (role) {
             'customer' => [
-                l10n.tr('Dashboard'),
+                l10n.tr('Home'),
                 l10n.myBookings,
                 l10n.navProfile,
               ],
-            'therapist' => [l10n.tr('Dashboard'), l10n.navProfile],
-            _ => [l10n.tr('Dashboard'), l10n.navProfile],
+            'therapist' => [l10n.tr('Home'), l10n.navProfile],
+            _ => [l10n.tr('Home'), l10n.navProfile],
           };
           final icons = switch (role) {
             'customer' => const [
@@ -120,7 +120,7 @@ class _HomeShellState extends State<HomeShell> {
               destinations: [
                 for (var i = 0; i < labels.length; i++)
                   NavigationDestination(
-                    icon: Icon(icons[i], color: AppColors.textOnDarkMuted),
+                    icon: Icon(icons[i], color: AppColors.ink),
                     selectedIcon: Icon(icons[i], color: Colors.white),
                     label: labels[i],
                   ),

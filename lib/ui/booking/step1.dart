@@ -108,7 +108,7 @@ class BookingStep1 extends StatelessWidget {
         if (categoryId != null) ...[
           const SizedBox(height: 18),
           Text(
-            '${categories.firstWhere((category) => category.id == categoryId, orElse: () => categories.first).nameFor(l10n.localeName)} services',
+            '${categories.firstWhere((category) => category.id == categoryId, orElse: () => categories.first).nameFor(l10n.localeName)} ',
             style: const TextStyle(
               fontSize: 22,
               color: _ink,
@@ -436,7 +436,7 @@ class _PriceOption extends StatelessWidget {
               ),
               child: Text(
                 option.duration == null
-                    ? option.label
+                    ? option.labelFor(AppLocalizations.of(context))
                     : '${option.duration} min',
                 textAlign: TextAlign.center,
                 style: const TextStyle(

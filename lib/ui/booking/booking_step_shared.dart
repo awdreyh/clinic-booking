@@ -18,11 +18,11 @@ class BookingPriceOption {
   final double price;
   final double? membershipPrice;
 
-  String get label => duration != null
-      ? '$duration minutes'
+  String labelFor(AppLocalizations l10n) => duration != null
+      ? l10n.tr('{count} minutes', {'count': duration})
       : sessions != null
-          ? '$sessions sessions'
-          : 'Standard';
+          ? l10n.tr('{count} sessions', {'count': sessions})
+          : l10n.tr('Standard');
   String get priceLabel => '\$${price.toStringAsFixed(0)}';
 
   factory BookingPriceOption.fromJson(Map<String, dynamic> json) =>
@@ -49,14 +49,14 @@ class BookingServiceSummary extends StatelessWidget {
   const BookingServiceSummary({
     super.key,
     required this.service,
-    this.collectionName,
+    this.categoryName,
     this.priceOption,
     this.extraTime,
     this.onEdit,
   });
 
   final Service? service;
-  final String? collectionName;
+  final String? categoryName;
   final BookingPriceOption? priceOption;
   final BookingPriceOption? extraTime;
   final VoidCallback? onEdit;
@@ -87,7 +87,7 @@ class BookingServiceSummary extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                service?.nameFor(l10n.localeName) ?? 'Selected treatment',
+                service?.nameFor(l10n.localeName) ?? l10n.tr('Selected treatment'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -99,14 +99,16 @@ class BookingServiceSummary extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 [
-                  if (collectionName?.isNotEmpty == true) collectionName!,
+                  if (categoryName?.isNotEmpty == true) categoryName!,
                   if (priceOption != null)
                     priceOption!.duration != null
                         ? '${priceOption!.duration} min'
-                        : priceOption!.label,
+                        : priceOption!.labelFor(l10n),
                   if (extraTime != null)
-                    '+${extraTime!.duration ?? 0} min extra time',
-                ].join(' Â· '),
+                    l10n.tr('+{count} min extra time', {
+                      'count': extraTime!.duration ?? 0,
+                    }),
+                ].join(' • '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 10, color: Color(0xFF797A6F)),
@@ -123,8 +125,8 @@ class BookingServiceSummary extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
-              'Edit',
+            child: Text(
+              l10n.tr('Edit'),
               style: TextStyle(
                 fontSize: 11,
                 decoration: TextDecoration.underline,

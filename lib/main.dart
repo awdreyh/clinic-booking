@@ -88,8 +88,15 @@ class _AuthGateState extends State<AuthGate> {
 
   void _onAuthStateChange(AuthState state) {
     final signedIn = state.session != null;
-    if (signedIn == _signedIn) return;
-    setState(() => _signedIn = signedIn);
+    final isSignInEvent = state.event == AuthChangeEvent.signedIn;
+    if (signedIn != _signedIn) {
+      setState(() => _signedIn = signedIn);
+    } else if (!isSignInEvent) {
+      return;
+    }
+
+    // A fresh sign-in can arrive while a stale session already had the gate
+    // marked as signed in. Still clear pushed routes so the dashboard shows.
     // Pushed routes (sign-in, guest browsing, booking) hide the auth change.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _navigatorKey.currentState?.popUntil((route) => route.isFirst);

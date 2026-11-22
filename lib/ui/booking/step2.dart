@@ -9,7 +9,7 @@ class BookingStep2 extends StatelessWidget {
   const BookingStep2({
     super.key,
     required this.service,
-    required this.collectionName,
+    required this.categoryName,
     required this.priceOption,
     required this.extraTime,
     required this.therapists,
@@ -22,7 +22,7 @@ class BookingStep2 extends StatelessWidget {
   });
 
   final Service? service;
-  final String? collectionName;
+  final String? categoryName;
   final BookingPriceOption? priceOption;
   final BookingPriceOption? extraTime;
   final List<User> therapists;
@@ -69,7 +69,7 @@ class BookingStep2 extends StatelessWidget {
       const SizedBox(height: 20),
       BookingServiceSummary(
         service: service,
-        collectionName: collectionName,
+        categoryName: categoryName,
         priceOption: priceOption,
         extraTime: extraTime,
         onEdit: onEditService,
@@ -259,7 +259,12 @@ class _TherapistCard extends StatelessWidget {
                     child: SizedBox(
                       width: 66,
                       height: 78,
-                      child: photoUrl?.isNotEmpty == true
+                      child: therapist.photoAsset != null
+                          ? Image.asset(
+                              therapist.photoAsset!,
+                              fit: BoxFit.cover,
+                            )
+                          : photoUrl?.isNotEmpty == true
                           ? Image.network(
                               photoUrl!,
                               fit: BoxFit.cover,
@@ -284,10 +289,10 @@ class _TherapistCard extends StatelessWidget {
                             color: Color(0xFF30372B),
                           ),
                         ),
-                        if (therapist.description?.isNotEmpty == true) ...[
+                        if (therapist.descriptionFor(l10n.localeName)?.isNotEmpty == true) ...[
                           const SizedBox(height: 4),
                           Text(
-                            therapist.description!,
+                            therapist.descriptionFor(l10n.localeName)!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

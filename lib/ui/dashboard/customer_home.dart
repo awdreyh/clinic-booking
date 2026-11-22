@@ -99,7 +99,7 @@ class _Hero extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    'Massage. Beauty. Tea',
+                    l10n.tr('Massage. Beauty. Tea'),
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           color: Colors.white,
                           height: 1.1,

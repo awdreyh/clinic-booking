@@ -27,6 +27,7 @@ class AppLocalizationsZh extends AppLocalizations {
         'A personal consultation and a calming herbal tea are included with every ritual.': '每次护理均包含专属咨询和舒缓草本茶。',
         'A sanctuary of energy, nature, serenity and oneness.': '融合能量、自然、宁静与和谐的疗愈空间。',
         'Availability': '可预约时间',
+        'Member price from {price}': '会员价格起价 {price}',
         'Available': '可预约',
         'Available times': '可预约时间',
         'YOUR MOMENT OF CALM': '享受宁静时光',
@@ -37,7 +38,7 @@ class AppLocalizationsZh extends AppLocalizations {
         '{count} available': '可预约 {count} 位',
         'Services': '服务项目',
         '{count} years of practice': '从业 {count} 年',
-        '{rating} ({count} reviews)': '{rating}（{count} 条评价）',
+        '{rating} ({count} reviews)': '{rating}({count} 条评价）',
         'SELECTED COLLECTION': '已选系列',
         'Back': '返回',
         'Back to welcome': '返回欢迎页',
@@ -78,6 +79,7 @@ class AppLocalizationsZh extends AppLocalizations {
         'Could not verify member pricing. Please retry.': '无法验证会员价格，请重试。',
         'Confirm': '确认',
         'Confirm & pay': '确认并付款',
+        'Confirm & continue to payment': '确认并继续付款',
         'Confirm booking': '确认预约',
         'Confirming creates your booking request and opens the payment step.': '确认后将提交预约请求并进入付款步骤。',
         'Continue': '继续',
@@ -88,7 +90,7 @@ class AppLocalizationsZh extends AppLocalizations {
         'Customers': '顾客',
         'Customer {customer} · {status}': '顾客 {customer} · {status}',
         'cancelled': '已取消',
-        'Dashboard': '主页',
+        'Home': '主页',
         'Date & time': '日期和时间',
         'Date unavailable': '日期不可用',
         'Done': '完成',
@@ -183,6 +185,7 @@ class AppLocalizationsZh extends AppLocalizations {
         '9:00 am - 9:00 pm': '上午 9:00 - 晚上 9:00',
         'minutes': '分钟',
         'sessions': '次',
+        'Choose your therapist': '选择您的理疗师'
       
       };
 @override

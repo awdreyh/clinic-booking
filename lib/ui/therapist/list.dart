@@ -97,7 +97,10 @@ class _TherapistListPageState extends State<TherapistListPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _TherapistPhoto(url: therapist.photoUrl),
+                            _TherapistPhoto(
+                              url: therapist.photoUrl,
+                              asset: therapist.photoAsset,
+                            ),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
@@ -112,7 +115,7 @@ class _TherapistListPageState extends State<TherapistListPage> {
                                     Text(
                                       services
                                           .map((service) => service.nameFor(l10n.localeName))
-                                          .join(' Â· '),
+                                          .join(' • '),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -157,9 +160,10 @@ class _TherapistDirectory {
 }
 
 class _TherapistPhoto extends StatelessWidget {
-  const _TherapistPhoto({this.url});
+  const _TherapistPhoto({this.url, this.asset});
 
   final String? url;
+  final String? asset;
 
   @override
   Widget build(BuildContext context) => ClipRRect(
@@ -167,7 +171,9 @@ class _TherapistPhoto extends StatelessWidget {
         child: SizedBox(
           width: 88,
           height: 88,
-          child: url == null || url!.isEmpty
+          child: asset != null
+              ? Image.asset(asset!, fit: BoxFit.cover)
+              : url == null || url!.isEmpty
               ? Container(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: const Icon(Icons.person, size: 42),

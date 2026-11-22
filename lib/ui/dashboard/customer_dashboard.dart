@@ -26,7 +26,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
     final rows = await Supabase.instance.client
         .from('booking')
-        .select('therapist_id, service_id, booking_date, start_time, end_time')
+        .select('therapist_id, service_id, booking_date, start_time, end_time, status')
         .eq('customer_id', user.id)
         .inFilter('status', ['booked', 'pending']);
 
@@ -66,6 +66,7 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
 
     final now = DateTime.now();
     final bookings = <_UpcomingBooking>[];
+    final pendingBookings = <_UpcomingBooking>[];
     for (final row in rows) {
       final date = row['booking_date']?.toString();
       final startTime = row['start_time']?.toString();
@@ -73,20 +74,23 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       if (date == null || startTime == null || endTime == null) continue;
 
       final startAt = DateTime.parse('${date}T$startTime');
-      if (!startAt.isAfter(now)) continue;
-
-      bookings.add(
-        _UpcomingBooking(
+      final booking = _UpcomingBooking(
           therapistName: therapistNames[row['therapist_id']?.toString()],
           serviceName: serviceNames[(row['service_id'] as num?)?.toInt()],
           startAt: startAt,
           endAt: DateTime.parse('${date}T$endTime'),
-        ),
-      );
+          status: row['status']?.toString() ?? 'pending',
+        );
+      if (booking.status == 'pending') {
+        pendingBookings.add(booking);
+      } else if (startAt.isAfter(now)) {
+        bookings.add(booking);
+      }
     }
 
     bookings.sort((a, b) => a.startAt.compareTo(b.startAt));
-    return bookings;
+    pendingBookings.sort((a, b) => a.startAt.compareTo(b.startAt));
+    return [...pendingBookings, ...bookings];
   }
 
   Future<void> _refreshBookings() async {
@@ -134,7 +138,9 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
       body: FutureBuilder<List<_UpcomingBooking>>(
         future: _bookingsFuture,
         builder: (context, snapshot) {
-          final bookings = snapshot.data ?? const <_UpcomingBooking>[];
+          final allBookings = snapshot.data ?? const <_UpcomingBooking>[];
+          final pendingBookings = allBookings.where((b) => b.status == 'pending').toList();
+          final bookings = allBookings.where((b) => b.status != 'pending').toList();
           return RefreshIndicator(
             onRefresh: _refreshBookings,
             child: ListView(
@@ -160,6 +166,17 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
                     onRetry: _refreshBookings,
                   )
                 else ...[
+                  if (pendingBookings.isNotEmpty) ...[
+                    Text(l10n.tr('Pending requests'), style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: 8),
+                    for (final booking in pendingBookings)
+                      _BookingListTile(
+                        booking: booking,
+                        dateLabel: materialL10n.formatMediumDate(booking.startAt),
+                        timeLabel: _formatTimeRange(materialL10n, booking.startAt, booking.endAt),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
                   Text(
                     l10n.nextBooking,
                     style: Theme.of(context).textTheme.titleLarge,
@@ -233,12 +250,14 @@ class _UpcomingBooking {
     this.serviceName,
     required this.startAt,
     required this.endAt,
+    required this.status,
   });
 
   final String? therapistName;
   final String? serviceName;
   final DateTime startAt;
   final DateTime endAt;
+  final String status;
 }
 
 class _NextBookingCard extends StatelessWidget {
@@ -311,7 +330,9 @@ class _BookingListTile extends StatelessWidget {
       leading: const Icon(Icons.calendar_month_outlined),
       title: Text(booking.therapistName ?? l10n.tr('Therapist')),
       subtitle: Text('$dateLabel · $timeLabel'),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: booking.status == 'pending'
+          ? Chip(label: Text(l10n.tr('Pending')))
+          : const Icon(Icons.chevron_right),
     );
   }
 }

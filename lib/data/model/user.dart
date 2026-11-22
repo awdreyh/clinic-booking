@@ -23,7 +23,7 @@ class User {
   final String name;
   final String email;
   final String phone;
-  final String? description;
+  final Map<String, String>? description;
   final bool isActive;
   final bool isMember;
   final DateTime? lastLogin;
@@ -39,12 +39,25 @@ class User {
 
   String? get photoUrl => photo?.isNotEmpty == true ? photo : profilePicture;
 
+  String? get photoAsset {
+    const therapistPhotos = {'Ray', 'Amy', 'Tina', 'Min'};
+    return role == 'therapist' && therapistPhotos.contains(name)
+        ? 'assets/therapists/$name.jpg'
+        : null;
+  }
+
+  String? descriptionFor(String languageCode) => description == null
+      ? null
+      : _localizedValue(description!, languageCode);
+
   factory User.fromJson(Map<String, dynamic> json) => User(
         id: json['id'] as String,
         name: json['name'] as String,
         email: json['email'] as String,
         phone: json['phone'] as String,
-        description: json['description'] as String?,
+        description: json['description'] == null
+            ? null
+            : _localizedText(json['description']),
         isActive: json['is_active'] as bool? ?? true,
         isMember: json['is_member'] as bool? ?? false,
         lastLogin: _dateTime(json['last_login']),
@@ -61,6 +74,17 @@ class User {
 
   static DateTime? _dateTime(Object? value) =>
       value == null ? null : DateTime.parse(value.toString());
+
+  static Map<String, String> _localizedText(dynamic value) {
+    if (value is Map) {
+      return value.map((key, value) => MapEntry(key.toString(), value.toString()));
+    }
+    if (value is String) return {'en': value};
+    return const {};
+  }
+
+  static String _localizedValue(Map<String, String> values, String languageCode) =>
+      values[languageCode] ?? values['en'] ?? values.values.firstOrNull ?? '';
 
   Map<String, dynamic> toJson() => {
         'id': id,

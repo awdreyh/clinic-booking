@@ -17,15 +17,13 @@ class TimeslotRepository {
         .maybeSingle();
     if (rule == null) return [];
 
-    var bookingsQuery = supabase
-        .from('booking')
-        .select('therapist_id, start_time, end_time')
-        .eq('booking_date', date)
-        .inFilter('status', ['booked', 'pending']);
-    if (therapistId != null) {
-      bookingsQuery = bookingsQuery.eq('therapist_id', therapistId);
-    }
-    final bookings = await bookingsQuery;
+    final therapistIds = therapistId != null
+        ? [therapistId]
+        : anyTherapistIds;
+    final bookings = await supabase.rpc(
+      'get_busy_booking_times',
+      params: {'p_booking_date': date, 'p_therapist_ids': therapistIds},
+    );
 
     int minutes(String time) {
       final parts = time.split(':');
@@ -55,12 +53,19 @@ class TimeslotRepository {
 
     final start = minutes(rule['start_time'].toString());
     final end = minutes(rule['end_time'].toString());
+    final requestedDate = DateTime.parse(date);
+    final now = DateTime.now();
+    final isToday = requestedDate.year == now.year &&
+        requestedDate.month == now.month &&
+        requestedDate.day == now.day;
+    final currentMinute = now.hour * 60 + now.minute;
     final gridStep = (rule['slot_duration'] as num).toInt();
     final length = requiredMinutes == null || requiredMinutes < gridStep
         ? gridStep
         : requiredMinutes;
     final slots = <Timeslot>[];
     for (var minute = start; minute + length <= end; minute += gridStep) {
+      if (isToday && minute <= currentMinute) continue;
       final slotEnd = minute + length;
       final isAvailable = therapistId != null
           ? !hasOverlap(occupiedByTherapist[therapistId], minute, slotEnd)

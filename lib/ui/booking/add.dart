@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:math';
+
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
 import '../../data/model/category.dart';
@@ -56,10 +58,10 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   DateTime _date = DateUtils.dateOnly(DateTime.now());
   Timeslot? _slot;
 
-  String? get _collectionName {
+  String? _categoryName(String languageCode) {
     final categoryId = _service?.categoryId;
     for (final category in _categoryItems) {
-      if (category.id == categoryId) return category.nameFor('en');
+      if (category.id == categoryId) return category.nameFor(languageCode);
     }
     return null;
   }
@@ -546,7 +548,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     ),
     1 => BookingStep2(
       service: _service,
-      collectionName: _collectionName,
+      categoryName: _categoryName(AppLocalizations.of(context).localeName),
       priceOption: _priceOption,
       extraTime: _extraTime,
       therapists: _therapistItems,
@@ -559,11 +561,12 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     ),
     2 => BookingStep3(
       service: _service,
-      collectionName: _collectionName,
+      categoryName: _categoryName(AppLocalizations.of(context).localeName),
       priceOption: _priceOption,
       extraTime: _extraTime,
       date: _date,
       slots: _slotItems,
+  
       selectedSlot: _slot,
       onDateChanged: (date) {
         setState(() {
@@ -627,6 +630,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
     if (_step <= 1) {
       final price = _totalPrice;
       final isTherapistStep = _step == 1;
+       final l10n = AppLocalizations.of(context);
       return SafeArea(
         top: false,
         child: Container(
@@ -646,10 +650,10 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                       children: [
                         Text(
                           _isMember
-                              ? 'Member total'
+                              ? l10n.tr('Member total')
                               : isTherapistStep
-                              ? 'Treatment price'
-                              : 'Selected treatment',
+                              ? l10n.tr('Treatment price')
+                              : l10n.tr('Selected treatment'),
                           style: TextStyle(
                             fontSize: 10,
                             color: Color(0xFF77796E),
@@ -657,7 +661,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                         ),
                         Text(
                           price == null
-                              ? 'Choose a service'
+                              ? l10n.tr('Choose a service')
                               : '\$${price.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontSize: 19,
@@ -713,7 +717,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Back'),
+                        child:  Text(l10n.tr('Back')),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -737,10 +741,10 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                           children: [
                             Text(
                               _saving
-                                  ? 'Please wait...'
+                                  ? l10n.tr('Please wait...')
                                   : isTherapistStep
-                                  ? 'Choose date & time'
-                                  : 'Choose your therapist',
+                                  ? l10n.tr('Choose date & time')
+                                  : l10n.tr('Choose your therapist'),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -759,6 +763,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
         ),
       );
     }
+    var l10n = AppLocalizations.of(context);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
@@ -767,7 +772,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
             if (_step > 0)
               OutlinedButton(
                 onPressed: _saving ? null : () => setState(() => _step--),
-                child: const Text('Back'),
+                child: Text(l10n.tr('Back')),
               ),
             const Spacer(),
             FilledButton(
@@ -784,10 +789,10 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
                     )
                   : Text(
                       _step == 4
-                          ? 'Confirm & continue to payment'
+                          ? l10n.tr('Confirm & continue to payment')
                           : _step == 3
-                          ? 'Continue'
-                          : 'Continue',
+                          ? l10n.tr('Continue')
+                          : l10n.tr('Continue'),
                     ),
             ),
           ],
@@ -811,6 +816,7 @@ class _PaymentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    
     appBar: AppBar(title: Text(AppLocalizations.of(context).tr('Payment'))),
     body: ListView(
       padding: const EdgeInsets.all(24),
@@ -818,7 +824,7 @@ class _PaymentPage extends StatelessWidget {
         const Icon(Icons.account_balance_wallet_outlined, size: 64),
         const SizedBox(height: 20),
         Text(
-          'Booking request received',
+          AppLocalizations.of(context).tr('Booking request received'),
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
@@ -849,7 +855,7 @@ class _PaymentPage extends StatelessWidget {
         const SizedBox(height: 16),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Done'),
+          child:  Text(AppLocalizations.of(context).tr('Done')),
         ),
       ],
     ),
@@ -877,9 +883,11 @@ class _ProgressHeader extends StatelessWidget {
                     children: [
                       Text(
                         [
-                          step == 1 ? 'âœ“  Service' : '01  Service',
-                          '02  Therapist',
-                          '03  Date & time',
+                          step == 1
+                              ? '  ${AppLocalizations.of(context).tr('Service')}'
+                              : '01  ${AppLocalizations.of(context).tr('Service')}',
+                          '02  ${AppLocalizations.of(context).tr('Therapist')}',
+                          '03  ${AppLocalizations.of(context).tr('Date & time')}',
                         ][i],
                         style: TextStyle(
                           fontSize: 10,

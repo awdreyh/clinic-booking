@@ -198,7 +198,7 @@ class _GuestHero extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       const Text(
-                        'ENSO SPACE Â· æ¸Šå¿ƒ.å…»èº«',
+                        'ENSO SPACE · 渊心.养身',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -215,7 +215,7 @@ class _GuestHero extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Massage. Beauty. Tea',
+                         l10n.tr('Massage. Beauty. Tea'),
                           style: Theme.of(context)
                               .textTheme
                               .displaySmall
@@ -340,27 +340,28 @@ class _ServicesSection extends StatelessWidget {
           Text(
             l10n.tr('Treatments for every body'),
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 18,
               color: Color(0xFF30372B),
             ),
           ),
           const SizedBox(height: 16),
           for (final section in sections) ...[
             Padding(
-              padding: const EdgeInsets.only(bottom: 10, top: 4),
+              padding: const EdgeInsets.only(bottom: 8, top: 4),
               child: Text(
                 section.title,
                 style: const TextStyle(
-                  fontSize: 19,
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFF30372B),
                 ),
               ),
             ),
             GridView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: section.services.length,
+              itemCount: section.services.length,             
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,

@@ -80,6 +80,7 @@ flutter:
     - assets/enso-logo.png
     - assets/enso-bg.jpg
     - assets/services/
+    - assets/therapists/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

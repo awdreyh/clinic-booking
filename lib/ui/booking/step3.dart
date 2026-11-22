@@ -9,22 +9,24 @@ class BookingStep3 extends StatelessWidget {
   const BookingStep3({
     super.key,
     required this.service,
-    required this.collectionName,
+    required this.categoryName,
     required this.priceOption,
     required this.extraTime,
     required this.date,
     required this.slots,
+
     required this.selectedSlot,
     required this.onDateChanged,
     required this.onSlotSelected,
   });
 
   final Service? service;
-  final String? collectionName;
+  final String? categoryName;
   final BookingPriceOption? priceOption;
   final BookingPriceOption? extraTime;
   final DateTime date;
   final List<Timeslot> slots;
+
   final Timeslot? selectedSlot;
   final ValueChanged<DateTime> onDateChanged;
   final ValueChanged<Timeslot> onSlotSelected;
@@ -37,7 +39,7 @@ class BookingStep3 extends StatelessWidget {
         children: [
           BookingServiceSummary(
             service: service,
-            collectionName: collectionName,
+            categoryName: categoryName,
             priceOption: priceOption,
             extraTime: extraTime,
           ),
@@ -48,6 +50,7 @@ class BookingStep3 extends StatelessWidget {
             lastDate: DateUtils.dateOnly(
               DateTime.now().add(const Duration(days: 365)),
             ),
+          
             onDateChanged: onDateChanged,
           ),
           Padding(

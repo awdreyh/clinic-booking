@@ -46,13 +46,13 @@ class BookingStep4 extends StatelessWidget {
         BookingSummaryTile(
           icon: Icons.timelapse,
           label: l10n.tr('Duration'),
-          value: priceOption!.label,
+          value: priceOption!.labelFor(l10n),
         ),
       if (extraTime != null)
         BookingSummaryTile(
           icon: Icons.more_time,
           label: l10n.tr('Extra time'),
-          value: '+${extraTime!.duration} min Â· ${extraTime!.priceLabel}',
+          value: '+${extraTime!.duration} min · ${extraTime!.priceLabel}',
         ),
       BookingSummaryTile(
         icon: Icons.person_outline,
@@ -63,7 +63,7 @@ class BookingStep4 extends StatelessWidget {
         icon: Icons.calendar_month_outlined,
         label: l10n.tr('Date & time'),
         value:
-            '${MaterialLocalizations.of(context).formatMediumDate(date)} Â· ${formatBookingTimeRange(context, slot)}',
+            '${MaterialLocalizations.of(context).formatMediumDate(date)} · ${formatBookingTimeRange(context, slot)}',
       ),
       if (totalPrice != null)
         BookingSummaryTile(

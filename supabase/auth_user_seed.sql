@@ -176,10 +176,10 @@ on conflict (id) do update set
 -- The auth trigger creates customer profiles; promote these seeded profiles.
 insert into public."user" (id, name, email, phone, role, is_active, description)
 values
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75101', 'Ray', 'ray@example.com', '021-123456', 'therapist', true, 'Therapeutic massage therapist specializing in deep tissue and recovery care.'),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75102', 'Amy', 'amy@example.com', '021-1234561', 'therapist', true, 'Wellness therapist focused on restorative massage and gentle relaxation.'),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75103', 'Tina', 'tina@example.com', '021-1234562', 'therapist', true, 'Holistic therapist offering attentive, calming treatments tailored to your needs.'),
-  ('4fc7d318-71e9-4f03-b12c-9e276aa75104', 'Min', 'min@example.com', '021-1234563', 'therapist', true, 'Massage therapist with a thoughtful, client-centred approach to care.'),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75101', 'Ray', 'ray@example.com', '021-123456', 'therapist', true, '{"en":"Therapeutic massage therapist specializing in deep tissue and recovery care.","zh":"专注于深层组织按摩和身体恢复护理的按摩治疗师。"}'::jsonb),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75102', 'Amy', 'amy@example.com', '021-1234561', 'therapist', true, '{"en":"Wellness therapist focused on restorative massage and gentle relaxation.","zh":"专注于修复按摩和温和放松护理的健康治疗师。"}'::jsonb),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75103', 'Tina', 'tina@example.com', '021-1234562', 'therapist', true, '{"en":"Holistic therapist offering attentive, calming treatments tailored to your needs.","zh":"提供贴心舒缓护理，并根据您的需求量身定制疗程的整体治疗师。"}'::jsonb),
+  ('4fc7d318-71e9-4f03-b12c-9e276aa75104', 'Min', 'min@example.com', '021-1234563', 'therapist', true, '{"en":"Massage therapist with a thoughtful, client-centred approach to care.","zh":"以细致、以客户为中心的方式提供护理的按摩治疗师。"}'::jsonb),
   ('4fc7d318-71e9-4f03-b12c-9e276aa75105', 'Audrey', 'audrey@example', '021-111222', 'customer', true, null),
   ('4fc7d318-71e9-4f03-b12c-9e276aa75106', 'Audrey Hong', 'audrey.hong@gmail.com', '021298764', 'admin', true, null),
   ('4fc7d318-71e9-4f03-b12c-9e276aa75107', 'HXY', 'hxy@example.com', null, 'customer', true, null)

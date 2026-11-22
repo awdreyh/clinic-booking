@@ -57,13 +57,13 @@ class BookingStep5 extends StatelessWidget {
         BookingSummaryTile(
           icon: Icons.more_time,
           label: l10n.tr('Extra time'),
-          value: '+${extraTime!.duration} min Â· ${extraTime!.priceLabel}',
+          value: '+${extraTime!.duration} min · ${extraTime!.priceLabel}',
         ),
       BookingSummaryTile(
         icon: Icons.calendar_month_outlined,
         label: l10n.tr('Appointment'),
         value:
-            '${MaterialLocalizations.of(context).formatMediumDate(date)} Â· ${formatBookingTimeRange(context, slot)}',
+            '${MaterialLocalizations.of(context).formatMediumDate(date)} · ${formatBookingTimeRange(context, slot)}',
       ),
       if (totalPrice != null)
         BookingSummaryTile(
