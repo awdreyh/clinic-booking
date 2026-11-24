@@ -1,0 +1,108 @@
+class User {
+  const User({
+    required this.id,
+    required this.name,
+    required this.role,
+    required this.email,
+    required this.phone,
+    this.description,
+    this.isActive = true,
+    this.isMember = false,
+    this.lastLogin,
+    this.updatedAt,
+    this.memberSince,
+    this.membershipExpires,
+    this.profilePicture,
+    this.photo,
+    this.meta,
+    this.address,
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String email;
+  final String phone;
+  final Map<String, String>? description;
+  final bool isActive;
+  final bool isMember;
+  final DateTime? lastLogin;
+  final DateTime? updatedAt;
+  final DateTime? memberSince;
+  final DateTime? membershipExpires;
+  final String? profilePicture;
+  final String? photo;
+  final Map<String, dynamic>? meta;
+  final String? address;
+  final String role;
+  final DateTime? createdAt;
+
+  String? get photoUrl => photo?.isNotEmpty == true ? photo : profilePicture;
+
+  String? get photoAsset {
+    const therapistPhotos = {'Ray', 'Amy', 'Tina', 'Min'};
+    return role == 'therapist' && therapistPhotos.contains(name)
+        ? 'assets/therapists/$name.jpg'
+        : null;
+  }
+
+  String? descriptionFor(String languageCode) => description == null
+      ? null
+      : _localizedValue(description!, languageCode);
+
+  factory User.fromJson(Map<String, dynamic> json) => User(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        email: json['email'] as String,
+        phone: json['phone'] as String,
+        description: json['description'] == null
+            ? null
+            : _localizedText(json['description']),
+        isActive: json['is_active'] as bool? ?? true,
+        isMember: json['is_member'] as bool? ?? false,
+        lastLogin: _dateTime(json['last_login']),
+        updatedAt: _dateTime(json['updated_at']),
+        memberSince: _dateTime(json['member_since']),
+        membershipExpires: _dateTime(json['membership_expires']),
+        profilePicture: json['profile_picture'] as String?,
+        photo: json['photo'] as String?,
+        meta: (json['meta'] as Map?)?.cast<String, dynamic>(),
+        address: json['address'] as String?,
+        role: json['role'] as String? ?? 'customer',
+        createdAt: _dateTime(json['created_at']),
+      );
+
+  static DateTime? _dateTime(Object? value) =>
+      value == null ? null : DateTime.parse(value.toString());
+
+  static Map<String, String> _localizedText(dynamic value) {
+    if (value is Map) {
+      return value.map((key, value) => MapEntry(key.toString(), value.toString()));
+    }
+    if (value is String) return {'en': value};
+    return const {};
+  }
+
+  static String _localizedValue(Map<String, String> values, String languageCode) =>
+      values[languageCode] ?? values['en'] ?? values.values.firstOrNull ?? '';
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'description': description,
+        'is_active': isActive,
+        'is_member': isMember,
+        'last_login': lastLogin?.toIso8601String(),
+        'updated_at': updatedAt?.toIso8601String(),
+        'member_since': memberSince?.toIso8601String(),
+        'membership_expires': membershipExpires?.toIso8601String(),
+        'profile_picture': profilePicture,
+        'photo': photo,
+        'meta': meta,
+        'address': address,
+        'role': role,
+        'created_at': createdAt?.toIso8601String(),
+      };
+}

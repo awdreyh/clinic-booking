@@ -1,0 +1,137 @@
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../dashboard/admin_dashboard.dart';
+import '../dashboard/customer_home.dart';
+import '../dashboard/therapist_dashboard.dart';
+import '../user/profile.dart';
+import '../dashboard/customer_dashboard.dart';
+import 'app_theme.dart';
+
+/// Routes signed-in users to the dashboard for their profile role.
+class HomeShell extends StatefulWidget {
+  const HomeShell({super.key});
+
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  late Future<String> _roleFuture;
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _roleFuture = _fetchRole();
+  }
+
+  Future<String> _fetchRole() async {
+    final id = Supabase.instance.client.auth.currentUser?.id;
+    if (id == null) return 'customer';
+    final profile = await Supabase.instance.client
+        .from('user')
+        .select('role')
+        .eq('id', id)
+        .maybeSingle();
+    final role = profile?['role']?.toString() ?? 'customer';
+    return const {'customer', 'therapist', 'admin'}.contains(role)
+        ? role
+        : 'customer';
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<String>(
+        future: _roleFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: AppBar(title: Text(AppLocalizations.of(context).tr('Account'))),
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(AppLocalizations.of(context).tr('Could not load your account role.')),
+                    TextButton(
+                      onPressed: () => setState(() => _roleFuture = _fetchRole()),
+                      child: Text(AppLocalizations.of(context).retry),
+                    ),
+                    TextButton(
+                      onPressed: () => Supabase.instance.client.auth.signOut(),
+                      child: Text(AppLocalizations.of(context).signOut),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          if (!snapshot.hasData) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+
+          final role = snapshot.data!;
+          final l10n = AppLocalizations.of(context);
+          final pages = switch (role) {
+            'therapist' => <Widget>[
+                TherapistDashboard(
+                  therapistId: Supabase.instance.client.auth.currentUser!.id,
+                ),
+                const ProfilePage(role: 'therapist'),
+              ],
+            'admin' => <Widget>[
+                 AdminDashboard(adminId: Supabase.instance.client.auth.currentUser!.id,),
+                const ProfilePage(role: 'admin'),
+              ],
+            _ => <Widget>[
+                CustomerHomePage(
+                  customerId: Supabase.instance.client.auth.currentUser!.id,
+                  onViewBookings: () => setState(() => _index = 1),
+                ),
+                CustomerDashboard(
+                  customerId: Supabase.instance.client.auth.currentUser!.id,
+                ),
+                const ProfilePage(role: 'customer'),
+              ],
+          };
+          final labels = switch (role) {
+            'customer' => [
+                l10n.tr('Home'),
+                l10n.myBookings,
+                l10n.navProfile,
+              ],
+            'therapist' => [l10n.tr('Home'), l10n.navProfile],
+            _ => [l10n.tr('Home'), l10n.navProfile],
+          };
+          final icons = switch (role) {
+            'customer' => const [
+                Icons.home_outlined,
+                Icons.event_note_outlined,
+                Icons.person_outline,
+              ],
+            _ => const [Icons.dashboard_outlined, Icons.person_outline],
+          };
+          final activeIndex = _index >= pages.length ? pages.length - 1 : _index;
+
+          return Scaffold(
+            body: IndexedStack(index: activeIndex, children: pages),
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: activeIndex,
+              onDestinationSelected: (index) => setState(() => _index = index),
+              backgroundColor: AppColors.primary,
+              indicatorColor: AppColors.accent,
+              destinations: [
+                for (var i = 0; i < labels.length; i++)
+                  NavigationDestination(
+                    icon: Icon(icons[i], color: AppColors.ink),
+                    selectedIcon: Icon(icons[i], color: Colors.white),
+                    label: labels[i],
+                  ),
+              ],
+            ),
+          );
+        },
+      );
+}
+
+

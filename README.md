@@ -1,6 +1,19 @@
-# clinic_booking
+# Enso Space
 
 A new Flutter project.
+
+## Local environment
+
+Copy `.env.app.example` to `.env.app` and set the public Supabase project URL and
+publishable/anon keys for the environment you want to run against. The app loads
+`.env.app` as a Flutter asset. Keep management tokens and service-role secrets in
+the ignored root `.env` file; the app must never load or bundle those secrets.
+
+On PowerShell, copy the template with:
+
+```powershell
+Copy-Item .env.app.example .env.app
+```
 
 ## Getting Started
 
