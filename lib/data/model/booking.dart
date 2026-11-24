@@ -1,3 +1,5 @@
+import 'booking_service.dart';
+
 class Booking {
   const Booking({
     required this.id,
@@ -12,6 +14,7 @@ class Booking {
     this.price,
     this.notes,
     this.createdAt,
+    this.services = const [],
   });
 
   final int id;
@@ -26,6 +29,7 @@ class Booking {
   final double? price;
   final String? notes;
   final DateTime? createdAt;
+  final List<BookingService> services;
 
   factory Booking.fromJson(Map<String, dynamic> json) => Booking(
         id: (json['id'] as num).toInt(),
@@ -38,6 +42,9 @@ class Booking {
         serviceId: (json['service_id'] as num?)?.toInt(),
         duration: json['duration'] as String?,
         price: (json['price'] as num?)?.toDouble(),
+        services: (json['booking_service'] as List? ?? const [])
+            .map((item) => BookingService.fromJson(Map<String, dynamic>.from(item)))
+            .toList(),
         notes: json['notes'] as String?,
             createdAt: json['created_at'] == null
             ? null

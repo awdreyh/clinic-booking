@@ -7,8 +7,13 @@ import '../booking/add.dart';
 
 /// Customer dashboard built from the Enso Space homepage content.
 class CustomerHomePage extends StatelessWidget {
-  const CustomerHomePage({super.key, required this.onViewBookings});
+  const CustomerHomePage({
+    super.key,
+    required this.customerId,
+    required this.onViewBookings,
+  });
 
+  final String customerId;
   final VoidCallback onViewBookings;
 
   @override

@@ -85,9 +85,12 @@ class _HomeShellState extends State<HomeShell> {
               ],
             _ => <Widget>[
                 CustomerHomePage(
+                  customerId: Supabase.instance.client.auth.currentUser!.id,
                   onViewBookings: () => setState(() => _index = 1),
                 ),
-                const CustomerDashboard(),
+                CustomerDashboard(
+                  customerId: Supabase.instance.client.auth.currentUser!.id,
+                ),
                 const ProfilePage(role: 'customer'),
               ],
           };

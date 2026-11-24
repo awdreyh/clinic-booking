@@ -5,7 +5,9 @@ import '../../l10n/app_localizations.dart';
 import '../booking/add.dart';
 
 class CustomerDashboard extends StatefulWidget {
-  const CustomerDashboard({super.key});
+  const CustomerDashboard({super.key, required this.customerId});
+
+  final String customerId;
 
   @override
   State<CustomerDashboard> createState() => _CustomerDashboardState();
@@ -21,13 +23,10 @@ class _CustomerDashboardState extends State<CustomerDashboard> {
   }
 
   Future<List<_UpcomingBooking>> _fetchUpcomingBookings() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return [];
-
     final rows = await Supabase.instance.client
         .from('booking')
         .select('therapist_id, service_id, booking_date, start_time, end_time, status')
-        .eq('customer_id', user.id)
+        .eq('customer_id', widget.customerId)
         .inFilter('status', ['booked', 'pending']);
 
     final therapistIds = rows

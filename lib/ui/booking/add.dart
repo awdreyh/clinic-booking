@@ -1,9 +1,12 @@
 ﻿import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide User;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' hide Card;
+import 'package:supabase_flutter/supabase_flutter.dart' hide User ;
 
 import '../../data/model/category.dart';
+import '../../data/model/booking_service.dart';
 import '../../data/model/service.dart';
 import '../../data/model/timeslot.dart';
 import '../../data/model/user.dart';
@@ -423,9 +426,24 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
         serviceId: _service!.id,
         duration: _totalDuration == null ? null : '$_totalDuration minutes',
         price: _totalPrice,
+        services: [
+          BookingService(
+            bookingId: 0,
+            serviceId: _service!.id,
+            duration: _priceOption?.duration,
+            price: _priceOption == null ? _totalPrice ?? 0 : _priceFor(_priceOption!),
+          ),
+          if (_extraTime != null)
+            BookingService(
+              bookingId: 0,
+              serviceId: _serviceItems.firstWhere((s) => s.nameFor('en').trim().toLowerCase() == 'extra time').id,
+              duration: _extraTime!.duration,
+              price: _priceFor(_extraTime!),
+            ),
+        ],
       );
       if (!mounted) return;
-      await Navigator.of(context).push(
+      final paid = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (_) => _PaymentPage(
             bookingId: booking.id,
@@ -435,7 +453,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
           ),
         ),
       );
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted && paid == true) Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -802,7 +820,7 @@ class _BookingConfirmPageState extends State<BookingConfirmPage> {
   }
 }
 
-class _PaymentPage extends StatelessWidget {
+class _PaymentPage extends StatefulWidget {
   const _PaymentPage({
     required this.bookingId,
     required this.service,
@@ -813,6 +831,55 @@ class _PaymentPage extends StatelessWidget {
   final Service service;
   final String therapistName;
   final double? totalPrice;
+
+  @override
+  State<_PaymentPage> createState() => _PaymentPageState();
+}
+
+class _PaymentPageState extends State<_PaymentPage> {
+  bool _busy = false;
+  String? _error;
+
+  Future<void> _pay() async {
+    setState(() { _busy = true; _error = null; });
+    try {
+      final supabase = Supabase.instance.client;
+      final session = supabase.auth.currentSession;
+      if (session == null || supabase.auth.currentUser == null) {
+        throw Exception('Please sign in again before paying.');
+      }
+      final key = dotenv.env['STRIPE_PUBLISHABLE_KEY']?.trim();
+      if (key == null || key.isEmpty) throw Exception('Stripe publishable key is not configured.');
+      final response = await supabase.functions.invoke(
+        'create-booking-payment',
+        body: {'bookingId': widget.bookingId},
+        headers: {'Authorization': 'Bearer ${session.accessToken}'},
+      );
+      if (response.status < 200 || response.status >= 300) {
+        throw Exception(response.data?['error'] ?? 'Could not prepare payment.');
+      }
+      final clientSecret = response.data['clientSecret'] as String?;
+      if (clientSecret == null) throw Exception('Payment setup returned no client secret.');
+      Stripe.publishableKey = key;
+      await Stripe.instance.applySettings();
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'Clinic',
+        ),
+      );
+      await Stripe.instance.presentPaymentSheet();
+      if (mounted) Navigator.of(context).pop(true);
+    } on StripeException catch (e) {
+      if (mounted && e.error.code != FailureCode.Canceled) {
+        setState(() => _error = e.error.localizedMessage ?? 'Payment failed. Please try again.');
+      }
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -829,21 +896,31 @@ class _PaymentPage extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Request #$bookingId is pending confirmation with $therapistName.',
+          'Request #${widget.bookingId} is pending confirmation with ${widget.therapistName}.',
         ),
         const SizedBox(height: 20),
         BookingSummaryTile(
           icon: Icons.spa_outlined,
           label: 'Service',
-          value: service.nameFor(AppLocalizations.of(context).localeName),
+          value: widget.service.nameFor(AppLocalizations.of(context).localeName),
         ),
-        if (totalPrice != null)
+        if (widget.totalPrice != null)
           BookingSummaryTile(
             icon: Icons.payments_outlined,
             label: 'Amount',
-            value: '\$${totalPrice!.toStringAsFixed(0)}',
+            value: '\$${widget.totalPrice!.toStringAsFixed(2)}',
           ),
         const SizedBox(height: 20),
+        if (_error != null) ...[
+          Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          const SizedBox(height: 12),
+        ],
+        FilledButton.icon(
+          onPressed: _busy ? null : _pay,
+          icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.lock_outline),
+          label: Text(_busy ? 'Preparing payment…' : 'Pay online'),
+        ),
+        const SizedBox(height: 12),
         const Card(
           child: Padding(
             padding: EdgeInsets.all(16),
@@ -854,7 +931,7 @@ class _PaymentPage extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _busy ? null : () => Navigator.of(context).pop(false),
           child:  Text(AppLocalizations.of(context).tr('Done')),
         ),
       ],
